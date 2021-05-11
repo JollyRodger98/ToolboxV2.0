@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{ current_page | title }}</title>
+    <link rel="icon" href="{{ url_for('static', filename="img/IconWhiteGrey.svg") }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename="scss/custom.css") }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename="node_modules/bootstrap-icons/font/bootstrap-icons.css") }}">
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <div id="sidebar" class="bg-TBPrimary" style="margin-left: -250px">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-TBPrimary">
+            <div class="container-fluid justify-content-center">
+                <a class="navbar-brand" href="#">
+                    <img src="{{ url_for('static', filename="img/IconWhiteGrey.svg") }}" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                    <span>ToolBox</span>
+                </a>
+                <a class="navbar-brand me-0 ms-auto sidebar-button" href="#" >
+                    <img src="{{ url_for('static', filename="img/sidebar-icon-close.svg") }}" alt="" width="30" height="24" class="d-inline-block align-text-top sidebar-button-close">
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <div id="content" class="bg-TBSecondary w-100">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-TBPrimary">
+            <div class="container-fluid">
+                <a class="navbar-brand sidebar-button" href="#" >
+                    <img src="{{ url_for('static', filename="img/sidebar-icon.svg") }}" id="sidebar-icon" alt="" width="30" height="24" class="d-inline-block align-text-top">
+                </a>
+            </div>
+        </nav>
+        <main class="container-fluid mt-2 g-2">
+            {% block main %}
+            {% endblock %}
+        </main>
+    </div>
+
+</div>
+
+<script src="{{ url_for("static", filename="node_modules/jquery/dist/jquery.min.js") }}"></script>
+<script src="{{ url_for("static", filename="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js") }}"></script>
+<script src="{{ url_for("static", filename="js/base.js") }}"></script>
+<script src="{{ url_for("static", filename="js/util.js") }}"></script>
+{% block custom_script %}
+{% endblock %}
+</body>
+
+</html>

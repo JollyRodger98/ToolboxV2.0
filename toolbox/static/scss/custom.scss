@@ -1,0 +1,64 @@
+//Bootstrap sass functions
+@import "../node_modules/bootstrap/scss/functions";
+
+// Default variable overrides
+$TBPrimary: #696969;
+$TBSecondary: #6495ED;
+$TBFontColor: #FFE4C4;
+
+$TBColors: (
+        "TBPrimary": $TBPrimary,
+        "TBSecondary": $TBSecondary,
+        "TBFontColor": $TBFontColor
+);
+
+//$body-color: $TBFontColor;
+$body-bg: $TBSecondary;
+
+@import "../node_modules/bootstrap/scss/variables";
+@import "../node_modules/bootstrap/scss/mixins";
+
+$theme-colors: map-merge($theme-colors, $TBColors);
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+@import url('https://fonts.googleapis.com/css2?family=B612+Mono&family=Fira+Mono&family=JetBrains+Mono&display=swap');
+
+.font-TBMonospace{
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+.wrapper{
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+}
+
+#sidebar {
+  width: 250px;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  position: absolute;
+  z-index: 999;
+  opacity: 0.95;
+  transition: margin-left .35s;
+}
+
+#sidebar.active{
+  margin-left: 0 !important;
+}
+
+.sidebar-button{
+  opacity: 1;
+}
+
+.sidebar-button-close{
+  &:hover{
+    opacity: .75;
+  }
+  &:focus{
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    opacity: 1;
+  }
+}

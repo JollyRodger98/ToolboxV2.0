@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ current_page | title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename="scss/custom.css") }}">
+    <script src="{{ url_for("static", filename="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js") }}"></script>
+    <script src="{{ url_for("static", filename="node_modules/jquery/dist/jquery.min.js") }}"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-lg-top navbar-dark bg-TBPrimary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='img/IconWhiteGrey.svg') }}" alt="" width="30" height="24" class="d-inline-block align-text-top">
+            Tool Box
+        </a>
+
+        <span class="navbar-text font-monospace user-select-none small" id="navbar-clock">
+            <span class="fw-bolder" id="navbar-time"></span> -
+            <span id="navbar-date"></span>
+        </span>
+{#
+        <div class="container w-auto m-0 text-end">
+            <div class="row">
+                <div class="col-12 navbar-text p-0 font-monospace user-select-none small fw-bolder" id="navbar-time"></div>
+                <div class="col-12 navbar-text p-0 font-monospace user-select-none small" id="navbar-date">Date</div>
+            </div>
+            <span class="navbar-text font-monospace user-select-none" id="navbar-clock"></span>
+            <span class="navbar-text font-monospace user-select-none">Date</span>
+        </div>
+#}
+    </div>
+</nav>
+<div class="container-fluid">
+    <div class="row flex-grow-1 h-100">
+        <div class="col-2 bg-TBPrimary">
+            <p>Menu</p>
+        </div>
+        <div class="col-10 bg-warning">
+            <p>Content</p>
+        </div>
+    </div>
+</div>
+
+<main>
+    {% block main %}
+    {% endblock %}
+</main>
+<script src="{{ url_for("static", filename="js/base.js") }}"></script>
+</body>
+</html>
