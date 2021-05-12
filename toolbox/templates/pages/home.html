@@ -14,13 +14,36 @@
         </div>
     </div>
 {% endmacro %}
-{% macro spec_table(table_headers=["", ""]) -%}
+{% macro spec_widget(card_title, table_headers=["", ""]) %}
+    <div class="col">
+        <div class="card user-select-none h-100">
+            <div class="card-body">
+                <div class="card-subtitle text-muted mb-2">{{ card_title }}</div>
+                <div class="card-text">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                            <tr>
+                                {%- for header in table_headers %}<th scope="col">{{ header | title }}</th>{% endfor -%}
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {{ caller() }}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+{% macro spec_table(table_headers=["", ""]) %}
     <div class="table-responsive">
         <table class="table table-sm">
             <thead>
             <tr>
                 {% for header in table_headers %}
-                    <th scope="col">{{- header | title }}</th>
+                    <th scope="col">{{ header | title }}</th>
                 {% endfor %}
             </tr>
             </thead>
@@ -29,24 +52,24 @@
             </tbody>
         </table>
     </div>
-{%- endmacro %}
+{% endmacro %}
 
 {% block main %}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-2">
 
-        {% call widget_card("clock" | title) -%}
+        {% call widget_card("clock" | title) %}
             <span class="badge fs-1 w-100 bg-TBPrimary font-TBMonospace" id="navbar-time">{% now 'Europe/Zurich', '%H:%M:%S' %}</span>
-        {%- endcall %}
+        {% endcall %}
 
-        {% call widget_card("calendar" | title) -%}
+        {% call widget_card("calendar" | title) %}
             <span class="badge fs-1 w-100 px-lg-1 bg-TBPrimary font-TBMonospace" id="navbar-date">{% now 'Europe/Zurich', '%d.%m.%Y' %}</span>
-        {%- endcall %}
+        {% endcall %}
 
         {% for widget in hardware.widget_list %}
             {% set widget_data = hardware.get_widget(widget) %}
             {% if widget_data.display_widget == True %}
                 {% if widget == "cpu" %}{% set widget = "CPU" %}{% else %}{% set widget = widget | title %}{% endif %}
-                {% call widget_card(widget) -%}
+                {% call widget_card(widget) %}
 
                     {% if widget_data.widget_type == "default" %}
                         {% call spec_table() %}
@@ -63,7 +86,7 @@
                             {% set headers = ["", ""] %}
                         {% endif %}
 
-                        {% call spec_table(headers) -%}
+                        {% call spec_table(headers) %}
                             {% for data_dict in widget_data.data_list %}
                                 <tr>
                                     {% for value in data_dict.items() if value.0 in widget_data.display_fields  %}
@@ -84,10 +107,10 @@
                                     {% endfor %}
                                 </tr>
                             {% endfor %}
-                        {%- endcall %}
+                        {% endcall %}
                     {% endif %}
 
-                {%- endcall %}
+                {% endcall %}
             {% endif %}
         {% endfor %}
         {{ hardware.get_widget_html() }}
