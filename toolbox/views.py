@@ -1,6 +1,6 @@
 from toolbox import app
-from toolbox.dashboard import HardwareWidget
-from toolbox.models import DisplaySettingsForm
+from toolbox.widgets import HardwareWidget
+from toolbox.models import DisplaySettingsForm, widget_list
 from flask import render_template, url_for, redirect
 
 
