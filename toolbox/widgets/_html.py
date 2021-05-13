@@ -25,5 +25,9 @@ widget_card_template: Markup = Markup(
     f"            </div>\n"
     f"        </div>\n"
     f"    </div>\n"
-    f"</div>\n"
-)
+    f"</div>\n")
+alert_danger_template = Markup(
+    f"<div class=\"alert alert-danger\" role=\"alert\">\n"
+    f"    <h4 class=\"alert-heading\">%(alert_title)s</h4>\n"
+    f"    %(alert_body)s\n"
+    f"</div>\n")
