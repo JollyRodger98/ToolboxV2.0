@@ -31,8 +31,21 @@ widget_card_template: Markup = Markup(
     f"        </div>\n"
     f"    </div>\n"
     f"</div>\n")
+
 alert_danger_template = Markup(
     f"<div class=\"alert alert-danger\" role=\"alert\">\n"
     f"    <h4 class=\"alert-heading\">%(alert_title)s</h4>\n"
     f"    %(alert_body)s\n"
     f"</div>\n")
+
+table_data_percentage_template = Markup(
+    f"<td class=\"align-middle\">\n"
+    f"    <div class=\"progress h-100\">\n"
+    f"        <div class=\"progress-bar percentage-bar %(bar_class)s\" role=\"progressbar\" "
+    f"             style=\"width: %(percentage)s%%;\" aria-valuenow=\"%(percentage)s\" aria-valuemin=\"0\" "
+    f"             aria-valuemin=\"100\" data-bs-toggle=\"tooltip\" title=\"%(percentage)s%%\" "
+    f"             data-bs-placement=\"left\">\n"
+    f"            %(percentage)s%%\n"
+    f"        </div>\n"
+    f"    </div>\n"
+    f"</td>\n")
