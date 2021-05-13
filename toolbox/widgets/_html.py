@@ -15,11 +15,14 @@ table_template: Markup = Markup(
 table_row_template: Markup = Markup("<tr class=\"%(row_class)s\">%(row_content)s</tr>")
 
 table_col_head_template: Markup = Markup("<th scope=\"col\">%s</th>")
-table_row_head_template: Markup = Markup("<th scope=\"row\">%s</th>")
-table_data_template: Markup = Markup("<td>%s</td>")
+
+table_row_head_template: Markup = Markup("<th class=\"text-nowrap\" scope=\"row\">%s</th>")
+
+table_data_template: Markup = Markup("<td class=\"%(cell_class)s\">%(cell_content)s</td>")
+
 widget_card_template: Markup = Markup(
     f"<div class=\"col\">\n"
-    f"    <div class=\"card user-select-none h-100\">\n"
+    f"    <div class=\"card user-select-none h-100 %(card_classes)s\">\n"
     f"        <div class=\"card-body\">\n"
     f"            <div class=\"card-subtitle text-muted mb-2\">%(card_title)s</div>\n"
     f"            <div class=\"card-text\">\n"
