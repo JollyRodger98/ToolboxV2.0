@@ -11,7 +11,4 @@ def root():
 
 @app.route('/home')
 def home():
-    # print(DisplaySettingsForm())
-    # for field in iter(DisplaySettingsForm()):
-    #     print(field)
     return render_template('pages/home.html', hardware=HardwareWidget(), form=DisplaySettingsForm())
