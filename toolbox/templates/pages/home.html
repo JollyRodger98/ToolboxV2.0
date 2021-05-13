@@ -24,7 +24,9 @@
                         <table class="table table-sm">
                             <thead>
                             <tr>
-                                {%- for header in table_headers %}<th scope="col">{{ header | title }}</th>{% endfor -%}
+                                {% for header in table_headers %}
+                                    <th scope="col">{{ header | title }}</th>
+                                {% endfor %}
                             </tr>
                             </thead>
                             <tbody>
