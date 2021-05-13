@@ -2,6 +2,11 @@ $(function () {
     NavbarDateTime()
     let timeIntervalId = NavbarTimeInterval()
     let dateIntervalId = NavbarDateInterval()
+
+    let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 });
 
 function NavbarTimeInterval(){
