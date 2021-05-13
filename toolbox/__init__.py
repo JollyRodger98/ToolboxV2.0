@@ -1,4 +1,3 @@
-import jinja2
 from flask import Flask
 from flask_mongoengine import MongoEngine
 
