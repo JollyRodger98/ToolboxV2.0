@@ -4,7 +4,7 @@ from toolbox.models import DashboardProfiles, widget_list
 from jinja2 import Markup
 from typing import Union, Final
 from ._html import table_template, widget_card_template, table_col_head_template, table_row_head_template,\
-    table_data_template, table_row_template
+    table_data_template, table_row_template, alert_danger_template
 
 
 class HardwareWidget(HardwareInfo):
@@ -18,6 +18,7 @@ class HardwareWidget(HardwareInfo):
         self._table_col_head: Final[Markup] = table_col_head_template
         self._table_data: Final[Markup] = table_data_template
         self._table_row: Final[Markup] = table_row_template
+        self._alert: Final[Markup] = alert_danger_template
 
     def get_widget(self, widget_name: str, profile: str = "Default") -> OrderedDict:
         if widget_name.lower() not in self.widget_list:
@@ -29,29 +30,36 @@ class HardwareWidget(HardwareInfo):
         widget_data["widget_type"] = getattr(profile.widgets, widget_name).widget_type
         return widget_data
 
-    def get_widget_html(self):
-        table_body: Union[Markup, list] = list()
-        table_head = self._table_row % (self._table_col_head % "#")
-        for widget in self.widget_list:
-            table_body.append(self._table_row % Markup(f"<td>{widget.title()}</td>"))
+    def get_widget_html(self, widget_name: str, profile: str = "Default") -> Markup:
+        widget: Markup
 
-        table_body = Markup(''.join(table_body))
-        spec_table = Markup(self._table % {"head": table_head, "body": table_body})
-        widget: Markup = self._widget_card % {"card_title": "Test Card", "card_content": spec_table}
+        if widget_name.lower() == "memory":
+            widget = self._memory_widget()
+        else:
+            li_widget_list = [f"<li>{i}</li>" for i in self.widget_list]
+            ul_widget_list = Markup("<ul>%s</ul>") % Markup(''.join(li_widget_list))
+            alert_content = Markup(f"<p>Available widgets are:<p>\n{ul_widget_list}")
+            card_content = self._alert % {"alert_title": f"Widget '{widget_name}' not found.",
+                                          "alert_body": alert_content}
+            widget = self._widget_card % {"card_title": "ERROR", "card_content": card_content}
 
-        return self._memory_widget()
+        return widget
 
-    def _memory_widget(self):
-        memory_specs = self.get_memory()
-        table_data = list()
+    def _memory_widget(self) -> Markup:
+        """Generate memory widget and return HTML Markup string.
+
+        :return: HTML Markup string with widget
+        :rtype: Markup
+        """
+        table_data: list = list()
         table_header = self._table_row % (self._table_col_head % '' * 2)
-        for data in memory_specs:
-            row_content = self._table_row_head % data.title() + self._table_data % memory_specs[data]
+
+        for data in self.get_memory().items():
+            row_content = self._table_row_head % data[0].title() + self._table_data % data[1]
             table_data.append(self._table_row % row_content)
         table_data = Markup("\n".join(table_data))
 
         table = self._table % {"head": table_header, "body": table_data}
         widget = self._widget_card % {"card_title": "Memory", "card_content": table}
 
-        print(widget)
         return widget
