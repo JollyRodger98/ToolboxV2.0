@@ -67,75 +67,99 @@
             <span class="badge fs-1 w-100 px-lg-1 bg-TBPrimary font-TBMonospace" id="navbar-date">{% now 'Europe/Zurich', '%d.%m.%Y' %}</span>
         {% endcall %}
 
-        {% for widget in hardware.widget_list %}
-            {% set widget_data = hardware.get_widget(widget) %}
-            {% if widget_data.display_widget == True %}
-                {% if widget == "cpu" %}{% set widget = "CPU" %}{% else %}{% set widget = widget | title %}{% endif %}
-                {% call widget_card(widget) %}
+        {% call widget_card("Test" | title) %}
+            <table class="table">
+                <thead>
+                <tr><th></th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>Test</th>
+                    <td>
+                        <div class="progress" style="height: 100%">
+                            <div class="progress-bar percentage-bar" role="progressbar" style="width: 33.33%;" aria-valuenow="33.33"
+                                 aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="left" title="Tooltip on top">
+                                33.33%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Test</th>
+                    <td>
+                        <div class="progress" style="height: 100%">
+                            <div class="progress-bar percentage-bar" role="progressbar" style="width: 33.33%;" aria-valuenow="33.33"
+                                 aria-valuemin="0" aria-valuemax="100" data-bs-toggle="tooltip" data-bs-placement="left" title="Tooltip on top">
+                                33.33%
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
 
-                    {% if widget_data.widget_type == "default" %}
-                        {% call spec_table() %}
-                            {% for value in widget_data.items() if value.0 in widget_data.display_fields %}
-                                <tr><th scope="row">{{ value.0 | title }}</th><td>{{ value.1 }}</td></tr>
-                            {% endfor %}
-                        {% endcall %}
-                    {% elif widget_data.widget_type == "list" %}
+            <p>
+                Lorem ipsum <span data-bs-toggle="tooltip" data-bs-placement="top" title="Tooltip on top">dolor</span>
+                sit amet, consectetur adipisicing elit. Ad corporis modi odio perspiciatis possimus,
+                quaerat qui ullam ut! At debitis earum itaque laudantium mollitia neque praesentium qui quibusdam sapiente vero?
+            </p>
+        {% endcall %}
 
-                        {% if widget | lower == "partitions" %}
-                            {% set headers = ["", "Total", "free", "used", ""] %}
-                            {% set percentage_field = ["used space percent"] %}
-                        {% else %}
-                            {% set headers = ["", ""] %}
-                        {% endif %}
+{#        {% for widget in hardware.widget_list %}#}
+{#            {% set widget_data = hardware.get_widget(widget) %}#}
+{#            {% if widget_data.display_widget == True %}#}
+{#                {% if widget == "cpu" %}{% set widget = "CPU" %}{% else %}{% set widget = widget | title %}{% endif %}#}
+{#                {% call widget_card(widget) %}#}
+{##}
+{#                    {% if widget_data.widget_type == "default" %}#}
+{#                        {% call spec_table() %}#}
+{#                            {% for value in widget_data.items() if value.0 in widget_data.display_fields %}#}
+{#                                <tr><th scope="row">{{ value.0 | title }}</th><td>{{ value.1 }}</td></tr>#}
+{#                            {% endfor %}#}
+{#                        {% endcall %}#}
+{#                    {% elif widget_data.widget_type == "list" %}#}
+{##}
+{#                        {% if widget | lower == "partitions" %}#}
+{#                            {% set headers = ["", "Total", "free", "used", ""] %}#}
+{#                            {% set percentage_field = ["used space percent"] %}#}
+{#                        {% else %}#}
+{#                            {% set headers = ["", ""] %}#}
+{#                        {% endif %}#}
+{##}
+{#                        {% call spec_table(headers) %}#}
+{#                            {% for data_dict in widget_data.data_list %}#}
+{#                                <tr>#}
+{#                                    {% for value in data_dict.items() if value.0 in widget_data.display_fields  %}#}
+{#                                        {% if value.0 in percentage_field %}#}
+{#                                            <td class="w-100 align-middle">#}
+{#                                                <div class="progress">#}
+{#                                                    <div class="progress-bar" role="progressbar"#}
+{#                                                         style="width: {{ value.1.replace("%", "") | int }}%;"#}
+{#                                                         aria-valuenow="{{ value.1.replace("%", "") | int }}"#}
+{#                                                         aria-valuemin="0" aria-valuemax="100">#}
+{#                                                        {{ value.1.replace("%", "") | int }}%#}
+{#                                                    </div>#}
+{#                                                </div>#}
+{#                                            </td>#}
+{#                                        {% else %}#}
+{#                                            <td class="text-nowrap">{{ value.1 }}</td>#}
+{#                                        {% endif %}#}
+{#                                    {% endfor %}#}
+{#                                </tr>#}
+{#                            {% endfor %}#}
+{#                        {% endcall %}#}
+{#                    {% endif %}#}
+{##}
+{#                {% endcall %}#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
 
-                        {% call spec_table(headers) %}
-                            {% for data_dict in widget_data.data_list %}
-                                <tr>
-                                    {% for value in data_dict.items() if value.0 in widget_data.display_fields  %}
-                                        {% if value.0 in percentage_field %}
-                                            <td class="w-100 align-middle">
-                                                <div class="progress">
-                                                    <div class="progress-bar" role="progressbar"
-                                                         style="width: {{ value.1.replace("%", "") | int }}%;"
-                                                         aria-valuenow="{{ value.1.replace("%", "") | int }}"
-                                                         aria-valuemin="0" aria-valuemax="100">
-                                                        {{ value.1.replace("%", "") | int }}%
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        {% else %}
-                                            <td class="text-nowrap">{{ value.1 }}</td>
-                                        {% endif %}
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        {% endcall %}
-                    {% endif %}
-
-                {% endcall %}
-            {% endif %}
-        {% endfor %}
-        {{ hardware.get_widget_html("memoryy") }}
+        {{ hardware.get_widget_html("memory") }}
+        {{ hardware.get_widget_html("system") }}
+        {{ hardware.get_widget_html("cpu") }}
+        {{ hardware.get_widget_html("partitions") }}
 
 
-
-        {#        {% call widget_card("memory") %}#}
-        {#            {% call spec_table() %}#}
-        {#                {% set memory = hardware.get_widget("memory") %}#}
-        {#                {% for value in memory.items() if value.0 in memory.display_fields %}#}
-        {#                    <tr><th scope="col">{{ value.0 | title }}</th><td>{{ value.1 }}</td></tr>#}
-        {#                {% endfor %}#}
-        {#            {% endcall %}#}
-        {#        {% endcall %}#}
-        {##}
-        {#        {% call widget_card("system") %}#}
-        {#            {% call spec_table() %}#}
-        {#                {% set system = hardware.get_widget("system") %}#}
-        {#                {% for value in system.items() if value.0 in system.display_fields %}#}
-        {#                    <tr><th scope="col">{{ value.0 | title }}</th><td>{{ value.1 }}</td></tr>#}
-        {#                {% endfor %}#}
-        {#            {% endcall %}#}
-        {#        {% endcall %}#}
 
     </div>
 {% endblock %}
