@@ -11,7 +11,9 @@ table_template: Markup = Markup(
     f"        </tbody>\n"
     f"    </table>\n"
     f"</div>\n")
-table_row_template: Markup = Markup("<tr>%s</tr>")
+
+table_row_template: Markup = Markup("<tr class=\"%(row_class)s\">%(row_content)s</tr>")
+
 table_col_head_template: Markup = Markup("<th scope=\"col\">%s</th>")
 table_row_head_template: Markup = Markup("<th scope=\"row\">%s</th>")
 table_data_template: Markup = Markup("<td>%s</td>")
