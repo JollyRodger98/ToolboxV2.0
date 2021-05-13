@@ -68,9 +68,9 @@ class HardwareInfo:
         return_dict = OrderedDict({
             "total": self.get_size(memory.total),
             "available": self.get_size(memory.available),
-            "percent": f"{memory.percent}%",
-            "used": self.get_size(memory.used),
             "free": self.get_size(memory.free),
+            "used": self.get_size(memory.used),
+            "percent": f"{memory.percent}%",
             # "display_settings": ["total", "available", "percent", "used"],
         })
         return return_dict
@@ -118,13 +118,13 @@ class HardwareInfo:
         :rtype: dict
         """
         cpu_frequency = psutil.cpu_freq()
-        core_usage = []
+        core_usage = {}
         for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
-            core_usage.append({f"{core}": f"{percentage}%"})
+            core_usage[core] = f"{percentage}%"
         return_dict = OrderedDict({
             "physical cores": psutil.cpu_count(logical=False), "logical cores": psutil.cpu_count(logical=True),
-            "min frequency": f"{cpu_frequency.min:.2f} Mhz", "max frequency": f"{cpu_frequency.max:.2f} Mhz",
-            "current frequency": f"{cpu_frequency.current:.2f} Mhz", "cpu usage by core": core_usage,
+            "min frequency": f"{cpu_frequency.min/1000:.2f} Khz", "max frequency": f"{cpu_frequency.max/1000:.2f} Khz",
+            "current frequency": f"{cpu_frequency.current/1000:.2f} Khz", "cpu usage by core": core_usage,
             "cpu usage total": f"{psutil.cpu_percent()}%"
         })
         return return_dict
