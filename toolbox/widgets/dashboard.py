@@ -48,6 +48,13 @@ def _percentage_bar_class(percentage: Union[int, float]) -> str:
         return "bg-danger"
 
 
+def _col_visible(field_name: str, display_settings: list):
+    if field_name.lower() not in display_settings:
+        return "visually-hidden"
+    else:
+        return ""
+
+
 class HardwareWidget(HardwareInfo):
 
     def __init__(self):
@@ -66,7 +73,7 @@ class HardwareWidget(HardwareInfo):
         self._alert: Final[Markup] = alert_danger_template
         self._table_data_percentage: Final[Markup] = table_data_percentage_template
         self._std_table_header: Final[Markup] = \
-            self._table_row % {"row_class": "", "row_content": (self._table_col_head % '' * 2)}
+            self._table_row % {"row_class": "", "row_content": (self._table_col_head % {"head_class": "", "head_content": ""} * 2)}
 
     def get_widget(self, widget_name: str, profile: str = "Default") -> OrderedDict:
         if widget_name.lower() not in self.widget_list:
@@ -110,16 +117,32 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "partitions"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.partitions.display_widget)]
+        partition_data_list = self.get_partitions()["data_list"]
 
-        for partition in self.get_partitions()["data_list"]:
+        for partition in partition_data_list:
+            row_content = []
             for data in partition.items():
-                print(data)
-                row_content = self._table_row_head % data[0].title() + self._table_data % {
-                    "cell_class": "", "cell_content": data[1]}
-                table_data.append(
-                    self._generate_table_row(data[0], user_profile.widgets.partitions.display_fields, row_content))
+                if data[0].lower() == "device":
+                    row_content.append(self._table_row_head % data[1])
+                else:
+                    col_visibility = _col_visible(data[0], user_profile.widgets.partitions.display_fields)
+                    row_content.append(self._table_data % {"cell_class": col_visibility, "cell_content": data[1]})
+            table_data.append(
+                self._table_row % {"row_class": "", "row_content": Markup("".join(row_content))}
+            )
+        table_header = []
+        for head_name in partition_data_list[0].items():
+            col_visibility = _col_visible(head_name[0], user_profile.widgets.partitions.display_fields)
+            table_header.append(self._table_col_head % {"head_class": col_visibility, "head_content": head_name[0].title()})
 
-        return self._generate_std_widget(WIDGET.title(), table_data, card_classes)
+        table_header = self._table_row % {"row_class": "", "row_content": Markup("".join(table_header))}
+
+        # row_content = self._table_row_head % data[0].title() + self._table_data % {
+        #     "cell_class": "", "cell_content": data[1]}
+        # table_data.append(
+        #     self._generate_table_row(data[0], user_profile.widgets.partitions.display_fields, row_content))
+
+        return self._generate_std_widget(WIDGET.title(), table_data, card_classes, table_header)
 
     def _memory_widget(self, profile: str) -> Markup:
         """Generate memory widget Markup string from hardware data.
@@ -207,7 +230,8 @@ class HardwareWidget(HardwareInfo):
         row_data = self._table_data_percentage % {"percentage": percentage, "bar_class": percentage_class}
         return row_head + row_data
 
-    def _generate_std_widget(self, card_title: str, table_data: list, card_classes: list) -> Markup:
+    def _generate_std_widget(self, card_title: str, table_data: list, card_classes: list,
+                             table_head: Markup = None) -> Markup:
         """Takes Markup strings and generates a full widget.
 
         Table data and card classes are joined to string.
@@ -215,11 +239,15 @@ class HardwareWidget(HardwareInfo):
         :param card_title: Title to be displayed at the top of the card.
         :param table_data: Content of specs table as list.
         :param card_classes: Classes to be applied to the entire card.
+        :param table_head: Markup string of table header, optional
         :return: Widget as Markup string
         """
+        if table_head is None:
+            table_head = self._std_table_header
+
         card_classes = " ".join(card_classes)
         table_data = Markup("\n".join(table_data))
-        table = self._table % {"head": self._std_table_header, "body": table_data}
+        table = self._table % {"head": table_head, "body": table_data}
         return self._widget_card % {"card_title": card_title, "card_content": table, "card_classes": card_classes}
 
     def _generate_table_row(self, field_name: str, display_settings: list,
