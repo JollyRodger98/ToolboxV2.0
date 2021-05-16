@@ -15,7 +15,11 @@ def _get_profile(profile: str, widget: str) -> DashboardProfiles:
     :return: MongoEngine document with widget settings for profile.
     :rtype: DashboardProfiles
     """
-    return DashboardProfiles.objects(profile_name=profile).only(f"widgets.{widget}").first()
+    db_return = DashboardProfiles.objects(profile_name=profile).only(f"widgets.{widget}").first()
+    if db_return is None:
+        return DashboardProfiles.objects(profile_name="Default").only(f"widgets.{widget}").first()
+    else:
+        return db_return
 
 
 def _widget_visible(display_setting: bool) -> str:
