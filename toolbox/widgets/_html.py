@@ -14,9 +14,9 @@ table_template: Markup = Markup(
 
 table_row_template: Markup = Markup("<tr class=\"%(row_class)s\">%(row_content)s</tr>")
 
-table_col_head_template: Markup = Markup("<th class=\"%(head_class)s\" scope=\"col\">%(head_content)s</th>")
+table_col_head_template: Markup = Markup("<th class=\"text-nowrap %(head_class)s\" scope=\"col\">%(head_content)s</th>")
 
-table_row_head_template: Markup = Markup("<th class=\"text-nowrap\" scope=\"row\">%s</th>")
+table_row_head_template: Markup = Markup("<th class=\"text-nowrap %(head_class)s\" scope=\"row\">%(head_content)s</th>")
 
 table_data_template: Markup = Markup("<td class=\"%(cell_class)s\">%(cell_content)s</td>")
 
