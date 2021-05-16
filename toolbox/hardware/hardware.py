@@ -29,7 +29,7 @@ class HardwareInfo:
 
     def __init__(self, suffix="B"):
         self.suffix = suffix
-        self.os = platform.system()
+        self.os = self.get_os()
 
     def get_size(self, input_bytes: [int]) -> str:
         """Converts bytes to larger and readable units.
