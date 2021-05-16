@@ -67,12 +67,13 @@
             <span class="badge fs-1 w-100 px-lg-1 bg-TBPrimary font-TBMonospace" id="navbar-date">{% now 'Europe/Zurich', '%d.%m.%Y' %}</span>
         {% endcall %}
 
-        {{ hardware.get_widget_html("memory", std_profile) }}
-        {{ hardware.get_widget_html("system", std_profile) }}
-        {{ hardware.get_widget_html("cpu", std_profile) }}
-        {{ hardware.get_widget_html("partitions", std_profile) }}
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-2">
 
-
+        {{ hardware.get_widget("memory", std_profile) }}
+        {{ hardware.get_widget("system", std_profile) }}
+        {{ hardware.get_widget("cpu", std_profile) }}
+        {{ hardware.get_widget("partitions", std_profile) }}
 
     </div>
 {% endblock %}
