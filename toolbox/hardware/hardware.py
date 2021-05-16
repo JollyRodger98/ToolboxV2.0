@@ -175,3 +175,7 @@ class HardwareInfo:
             "kernel update": kernel_update,
         })
         return return_dict
+
+    @staticmethod
+    def get_os():
+        return platform.system()
