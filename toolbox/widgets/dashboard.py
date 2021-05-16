@@ -163,7 +163,7 @@ class HardwareWidget(HardwareInfo):
             if data[0].lower() == "percent":
                 row_content = self._generate_percentage_row(data[0].title(), data[1])
             else:
-                row_content = self._table_row_head % data[0].title() + \
+                row_content = self._table_row_head % {"head_class": "", "head_content": data[0].title()} + \
                               self._table_data % {"cell_class": "", "cell_content": data[1]}
 
             table_data.append(
@@ -179,7 +179,7 @@ class HardwareWidget(HardwareInfo):
         card_classes = [_widget_visible(user_profile.widgets.system.display_widget)]
 
         for data in self.get_system().items():
-            row_content = self._table_row_head % data[0].title() + \
+            row_content = self._table_row_head % {"head_class": "", "head_content": data[0].title()} + \
                           self._table_data % {"cell_class": "", "cell_content": data[1]}
             table_data.append(
                 self._generate_table_row(data[0], user_profile.widgets.system.display_fields, row_content))
@@ -207,12 +207,12 @@ class HardwareWidget(HardwareInfo):
 
                 row_data = Markup("".join(cores))
                 alignment = "align-middle"
-                row_content = self._table_row_head % field_name + self._table_data % {
-                    "cell_class": "font-TBMonospace h6", "cell_content": row_data}
+                row_content = self._table_row_head % {"head_class": "", "head_content": field_name} + \
+                    self._table_data % {"cell_class": "font-TBMonospace h6", "cell_content": row_data}
             elif data[0].lower() == "cpu usage total":
                 row_content = self._generate_percentage_row(field_name, data[1])
             else:
-                row_content = self._table_row_head % data[0].title() + \
+                row_content = self._table_row_head % {"head_class": "", "head_content": data[0].title()} + \
                               self._table_data % {"cell_class": "", "cell_content": data[1]}
 
             table_data.append(
@@ -229,7 +229,7 @@ class HardwareWidget(HardwareInfo):
         """
         percentage = float(value.replace('%', ''))
         percentage_class = _percentage_bar_class(percentage)
-        row_head = self._table_row_head % key
+        row_head = self._table_row_head % {"head_class": "", "head_content": key}
         row_data = self._table_data_percentage % {"percentage": percentage, "bar_class": percentage_class}
         return row_head + row_data
 
