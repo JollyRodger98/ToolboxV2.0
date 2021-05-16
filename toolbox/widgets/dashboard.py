@@ -133,25 +133,22 @@ class HardwareWidget(HardwareInfo):
         for partition in partition_data_list:
             row_content = []
             for data in partition.items():
-                if data[0].lower() == "device":
-                    row_content.append(self._table_row_head % data[1])
+                if data[0].lower() == "used space percent":
+                    percent = float(data[1].replace("%", ""))
+                    row_content.append(self._table_data_percentage % {"percentage": percent, "bar_class": ""})
                 else:
                     col_visibility = _col_visible(data[0], user_profile.widgets.partitions.display_fields)
                     row_content.append(self._table_data % {"cell_class": col_visibility, "cell_content": data[1]})
             table_data.append(
-                self._table_row % {"row_class": "", "row_content": Markup("".join(row_content))}
+                self._table_row % {"row_class": "text-nowrap", "row_content": Markup("".join(row_content))}
             )
         table_header = []
         for head_name in partition_data_list[0].items():
             col_visibility = _col_visible(head_name[0], user_profile.widgets.partitions.display_fields)
-            table_header.append(self._table_col_head % {"head_class": col_visibility, "head_content": head_name[0].title()})
+            table_header.append(self._table_col_head % {"head_class": col_visibility,
+                                                        "head_content": head_name[0].title()})
 
-        table_header = self._table_row % {"row_class": "", "row_content": Markup("".join(table_header))}
-
-        # row_content = self._table_row_head % data[0].title() + self._table_data % {
-        #     "cell_class": "", "cell_content": data[1]}
-        # table_data.append(
-        #     self._generate_table_row(data[0], user_profile.widgets.partitions.display_fields, row_content))
+        table_header = self._table_row % {"row_class": "text-nowrap", "row_content": Markup("".join(table_header))}
 
         return self._generate_std_widget(WIDGET.title(), table_data, card_classes, table_header)
 
