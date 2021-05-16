@@ -114,7 +114,7 @@ class HardwareInfo:
                 except PermissionError:
                     continue
                 data = OrderedDict({
-                    "name": "",
+                    "name": partition.device,
                     "device": partition.device,
                     "mountpoint": partition.mountpoint,
                     "total space": self.get_size(disk_usage.total),
