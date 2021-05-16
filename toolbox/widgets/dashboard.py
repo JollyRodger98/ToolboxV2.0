@@ -86,19 +86,10 @@ class HardwareWidget(HardwareInfo):
         self._alert: Final[Markup] = alert_danger_template
         self._table_data_percentage: Final[Markup] = table_data_percentage_template
         self._std_table_header: Final[Markup] = \
-            self._table_row % {"row_class": "", "row_content": (self._table_col_head % {"head_class": "", "head_content": ""} * 2)}
+            self._table_row % {"row_class": "",
+                               "row_content": (self._table_col_head % {"head_class": "", "head_content": ""} * 2)}
 
-    def get_widget(self, widget_name: str, profile: str = "Default") -> OrderedDict:
-        if widget_name.lower() not in self.widget_list:
-            raise Exception(f"invalid widget for get_widget(): '{widget_name}'")
-        widget_data: OrderedDict = getattr(self, f"get_{widget_name}")()
-        profile: DashboardProfiles = DashboardProfiles.objects(profile_name=profile).only(f"widgets.{widget_name}").first()
-        widget_data["display_fields"] = getattr(profile.widgets, widget_name).display_fields
-        widget_data["display_widget"] = getattr(profile.widgets, widget_name).display_widget
-        widget_data["widget_type"] = getattr(profile.widgets, widget_name).widget_type
-        return widget_data
-
-    def get_widget_html(self, widget_name: str, profile: str = "Default") -> Markup:
+    def get_widget(self, widget_name: str, profile: str = "Default") -> Markup:
         """Get widget HTML Markup string with name and profile.
 
         :param widget_name: Name of the widget.
