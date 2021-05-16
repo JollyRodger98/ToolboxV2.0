@@ -1,8 +1,10 @@
 from collections import OrderedDict
+from typing import Union, Final
+
+from jinja2 import Markup
+
 from toolbox.hardware import HardwareInfo
 from toolbox.models import DashboardProfiles, widget_list
-from jinja2 import Markup
-from typing import Union, Final, Any
 from ._html import table_template, widget_card_template, table_col_head_template, table_row_head_template, \
     table_data_template, table_row_template, alert_danger_template, table_data_percentage_template
 
