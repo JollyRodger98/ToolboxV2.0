@@ -85,7 +85,28 @@ class HardwareInfo:
         :rtype: dict
         """
         partition_list: list[OrderedDict] = []
-        if "Darwin" in self.os or "Windows" in self.os:
+        if self.os == "Darwin":
+            partitions = psutil.disk_partitions()
+            for partition in partitions:
+                try:
+                    disk_usage = psutil.disk_usage(partition.mountpoint)
+                except PermissionError:
+                    continue
+                if partition.mountpoint == "/":
+                    name = partition.mountpoint
+                else:
+                    name = f"/{str(partition.mountpoint).split('/')[-1]}"
+                data = OrderedDict({
+                    "name": name,
+                    "device": partition.device,
+                    "mountpoint": partition.mountpoint,
+                    "total space": self.get_size(disk_usage.total),
+                    "free space": self.get_size(disk_usage.free),
+                    "used space": self.get_size(disk_usage.total),
+                    "used space percent": f"{disk_usage.percent}%",
+                })
+                partition_list.append(data)
+        elif self.os == "Windows":
             partitions = psutil.disk_partitions()
             for partition in partitions:
                 try:
@@ -93,6 +114,7 @@ class HardwareInfo:
                 except PermissionError:
                     continue
                 data = OrderedDict({
+                    "name": "",
                     "device": partition.device,
                     "mountpoint": partition.mountpoint,
                     "total space": self.get_size(disk_usage.total),
