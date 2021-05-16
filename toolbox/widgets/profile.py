@@ -6,7 +6,6 @@ def get_default_os_profile():
     if os == "Darwin":
         return "MacOS"
     elif os == "Windows":
-        # TODO create Windows profile on DB
-        return "Default"
+        return "Windows"
     else:
         return "Default"
