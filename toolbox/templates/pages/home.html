@@ -154,10 +154,10 @@
 {#            {% endif %}#}
 {#        {% endfor %}#}
 
-        {{ hardware.get_widget_html("memory") }}
-        {{ hardware.get_widget_html("system") }}
-        {{ hardware.get_widget_html("cpu") }}
-        {{ hardware.get_widget_html("partitions") }}
+        {{ hardware.get_widget_html("memory", std_profile) }}
+        {{ hardware.get_widget_html("system", std_profile) }}
+        {{ hardware.get_widget_html("cpu", std_profile) }}
+        {{ hardware.get_widget_html("partitions", std_profile) }}
 
 
 
