@@ -201,8 +201,10 @@ class HardwareWidget(HardwareInfo):
                 cores = []
                 for index, field in enumerate(data[1]):
                     percentage = int(float(data[1][field].replace('%', '')))
-                    cores.append(f"<span class=\"text-nowrap\"><strong>{field+1:02d}</strong>:{percentage:02d}%;</span>")
-                    if (index+1) % 4 == 0:
+                    cores.append(f"<span class=\"text-nowrap\">"
+                                 f"<strong>{field + 1:02d}</strong>:{percentage:02d}%;"
+                                 f"</span>")
+                    if (index + 1) % 4 == 0:
                         cores.append(" ")
 
                 row_data = Markup("".join(cores))
