@@ -53,6 +53,13 @@ def _percentage_bar_class(percentage: Union[int, float]) -> str:
 
 
 def _col_visible(field_name: str, display_settings: list):
+    """Return required CSS class based on profile settings.
+
+    :param field_name: Name of fields to check visibility
+    :param display_settings: Setting from user profile.
+    :return: CSS class for column visibility
+    :rtype: str
+    """
     if field_name.lower() not in display_settings:
         return "visually-hidden"
     else:
