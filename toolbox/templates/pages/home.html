@@ -57,7 +57,7 @@
 {% endmacro %}
 
 {% block main %}
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xxl-4 g-2">
+    <div class="row row-cols-1 row-cols-lg-2 mb-2 g-2">
 
         {% call widget_card("clock" | title) %}
             <span class="badge fs-1 w-100 bg-TBPrimary font-TBMonospace" id="navbar-time">{% now 'Europe/Zurich', '%H:%M:%S' %}</span>
