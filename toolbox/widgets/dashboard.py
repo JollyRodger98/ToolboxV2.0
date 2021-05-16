@@ -128,7 +128,9 @@ class HardwareWidget(HardwareInfo):
             for data in partition.items():
                 if data[0].lower() == "used space percent":
                     percent = float(data[1].replace("%", ""))
-                    row_content.append(self._table_data_percentage % {"percentage": percent, "bar_class": ""})
+                    percentage_class = _percentage_bar_class(percent)
+                    row_content.append(self._table_data_percentage % {"percentage": percent,
+                                                                      "bar_class": percentage_class})
                 else:
                     col_visibility = _col_visible(data[0], user_profile.widgets.partitions.display_fields)
                     row_content.append(self._table_data % {"cell_class": col_visibility, "cell_content": data[1]})
