@@ -1,6 +1,6 @@
 from toolbox import app
-from toolbox.widgets import HardwareWidget
-from toolbox.models import DisplaySettingsForm, widget_list
+from toolbox.widgets import HardwareWidget, get_default_os_profile
+from toolbox.models import DisplaySettingsForm
 from flask import render_template, url_for, redirect
 
 
@@ -11,4 +11,5 @@ def root():
 
 @app.route('/home')
 def home():
-    return render_template('pages/home.html', hardware=HardwareWidget(), form=DisplaySettingsForm())
+    return render_template('pages/home.html', hardware=HardwareWidget(),
+                           form=DisplaySettingsForm(), std_profile=get_default_os_profile())
