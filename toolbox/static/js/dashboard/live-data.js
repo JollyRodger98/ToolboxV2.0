@@ -1,48 +1,53 @@
 sessionStorage.setItem("CPUInterval", "1")
-sessionStorage.setItem("CPUByCoreInterval", "1")
 sessionStorage.setItem("MemoryInterval", "1")
+sessionStorage.setItem("CPUByCoreInterval", "1")
 $(function () {
     /**@type {boolean}*/
     let CPULiveToggle, MemoryLiveToggle, CPUByCoreLiveToggle
     /**@type {number}*/
     let CPUIntervalID, MemoryIntervalID, CPUByCoreIntervalID
     CPULiveToggle = MemoryLiveToggle = CPUByCoreLiveToggle = false
-    /**@type {number}*/
-    let CPUInterval, MemoryInterval, CPUByCoreInterval
-    CPUInterval = Number(sessionStorage.getItem("CPUInterval"))
-    MemoryInterval = Number(sessionStorage.getItem("MemoryInterval"))
-    CPUByCoreInterval = Number(sessionStorage.getItem("CPUByCoreInterval"))
 
-
+    $("button.live-data-time-btn").on("click", function () {
+        let $toggle = $(this).parents("div.btn-group").children("button.live-data-toggle")
+        let $select = $(this).parents("form").children().find("select.live-data-time-select")
+        if ($toggle.prop("id") === "cpu-percent"){
+            console.log("CPU")
+            sessionStorage.setItem("CPUInterval", String($select.prop("value")))
+        }else if ($toggle.prop("id") === "memory-percent"){
+            console.log("Memory")
+            sessionStorage.setItem("MemoryInterval", String($select.prop("value")))
+        }else if ($toggle.prop("id") === "cpu-by-core-percent"){
+            console.log("CPU by Core")
+            sessionStorage.setItem("CPUByCoreInterval", String($select.prop("value")))
+        }
+    })
     $("#cpu-percent").on("mouseup", function () {
         if (CPULiveToggle) {
-            clearInterval(CPUIntervalID)
             CPULiveToggle = false
-            $(this).children().addClass("text-danger").removeClass("text-success")
+            resetToggle(CPUIntervalID, $(this))
         }else if (!CPULiveToggle){
-            CPUIntervalID = setInterval(function (){RefreshCPUTotal()}, 1000)
+            CPUIntervalID = setInterval(function (){RefreshCPUTotal()}, Number(sessionStorage.getItem("CPUInterval"))*1000)
             CPULiveToggle = true
             $(this).children().removeClass("text-danger").addClass("text-success")
         }
     })
     $("#memory-percent").on("mouseup", function () {
         if (MemoryLiveToggle) {
-            clearInterval(MemoryIntervalID)
             MemoryLiveToggle = false
-            $(this).children().addClass("text-danger").removeClass("text-success")
+            resetToggle(MemoryIntervalID, $(this))
         }else if (!MemoryLiveToggle){
-            MemoryIntervalID = setInterval(function (){RefreshMemoryTotal()}, 1000)
+            MemoryIntervalID = setInterval(function (){RefreshMemoryTotal()}, Number(sessionStorage.getItem("MemoryInterval"))*1000)
             MemoryLiveToggle = true
             $(this).children().removeClass("text-danger").addClass("text-success")
         }
     })
     $("#cpu-by-core-percent").on("mouseup", function () {
         if (CPUByCoreLiveToggle) {
-            clearInterval(CPUByCoreIntervalID)
             CPUByCoreLiveToggle = false
-            $(this).children().addClass("text-danger").removeClass("text-success")
+            resetToggle(CPUByCoreIntervalID, $(this))
         }else if (!CPUByCoreLiveToggle){
-            CPUByCoreIntervalID = setInterval(function (){RefreshCPUByCore()}, 1000)
+            CPUByCoreIntervalID = setInterval(function (){RefreshCPUByCore()}, Number(sessionStorage.getItem("CPUByCoreInterval"))*1000)
             CPUByCoreLiveToggle = true
             $(this).children().removeClass("text-danger").addClass("text-success")
         }
@@ -83,4 +88,8 @@ function RefreshCPUByCore(){
             data["cpu-by-core-percent"]
         )
     })
+}
+function resetToggle(id, button){
+    clearInterval(id)
+    button.children().addClass("text-danger").removeClass("text-success")
 }
