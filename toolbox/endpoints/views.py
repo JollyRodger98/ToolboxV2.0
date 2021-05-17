@@ -9,7 +9,7 @@ def root():
     return redirect(url_for('home'))
 
 
-@app.route('/home')
+@app.route("/home", methods=["GET"])
 def home():
     return render_template('pages/home.html', hardware=HardwareWidget(),
                            form=DisplaySettingsForm(), std_profile=get_default_os_profile())
