@@ -1,4 +1,3 @@
 /venv/
 /toolbox/static/node_modules/
-/.idea/
 /toolbox/config.py
