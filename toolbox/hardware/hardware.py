@@ -164,7 +164,7 @@ class HardwareInfo:
             name = system.node
             architecture = re.search(r"^.*(32|64).*$", system.machine)
             architecture = f"{architecture.groups()[0]}-Bit"
-            last_boot = datetime.fromtimestamp(psutil.boot_time())
+            last_boot = datetime.fromtimestamp(psutil.boot_time()).strftime(self.DT_FMT)
             processor = " ".join(system.processor.split(' ')[0:5])
             kernel = f"{system.system} {system.release}"
             kernel_update = "N/A"
@@ -173,7 +173,7 @@ class HardwareInfo:
             system = platform.uname()
             name = system.node.split(".")[0]
             architecture = f"{system.machine.split('_')[-1]}-Bit"
-            last_boot = datetime.fromtimestamp(psutil.boot_time())
+            last_boot = datetime.fromtimestamp(psutil.boot_time()).strftime(self.DT_FMT)
             processor = system.processor
             kernel = f"{system.system} {system.release}"
             kernel_update = system.version.split(";").pop(0).split(": ").pop(1)
