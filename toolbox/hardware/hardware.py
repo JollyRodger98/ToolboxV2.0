@@ -201,3 +201,18 @@ class HardwareInfo:
     @staticmethod
     def get_os():
         return platform.system()
+
+    @staticmethod
+    def get_cpu_percentage() -> str:
+        return f"{psutil.cpu_percent(interval=1)}%"
+
+    @staticmethod
+    def get_memory_percentage() -> str:
+        return f"{psutil.virtual_memory().percent}%"
+
+    @staticmethod
+    def get_cpu_percentage_by_core():
+        core_usage: dict[int, str] = {}
+        for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+            core_usage[core] = f"{percentage}%"
+        return core_usage
