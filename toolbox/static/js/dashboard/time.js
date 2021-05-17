@@ -34,10 +34,3 @@ function get_time(){
     let seconds = pad(time.getSeconds(), 2)
     return `${hours}:${minutes}:${seconds}`
 }
-
-function set_cpu_usage_bar(percent_value) {
-    let $elem = $('th:contains("CPU Usage Total")').next().children().children()
-    let [percent, percent_str] = [percent_value, `${percent_value}%`]
-    $elem.attr("aria-valuenow", percent).attr("data-bs-original-title", percent_str)
-        .css("width", percent_str).text(percent_str)
-}
