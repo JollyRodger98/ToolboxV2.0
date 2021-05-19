@@ -11065,4 +11065,9 @@ textarea.form-control-lg {
   opacity: 1;
 }
 
+.live-data-toggle div[role=status] {
+  vertical-align: -0.125em;
+  animation-duration: 1.5s;
+}
+
 /*# sourceMappingURL=custom.css.map */

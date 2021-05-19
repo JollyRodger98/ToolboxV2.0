@@ -62,3 +62,9 @@ $theme-colors: map-merge($theme-colors, $TBColors);
     opacity: 1;
   }
 }
+
+.live-data-toggle div[role="status"]{
+  vertical-align: -.125em;
+  animation-duration: 1.5s;
+  //animation-timing-function: cubic-bezier(1, -5, 1, -5);
+}
