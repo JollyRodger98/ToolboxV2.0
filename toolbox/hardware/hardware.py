@@ -5,6 +5,8 @@ from pytz import timezone
 from dateutil import parser
 from datetime import datetime
 from collections import OrderedDict
+from psutil._common import snicaddr
+import enum
 
 
 def sort_ordered_dict_by_key(ordered_dict: OrderedDict) -> OrderedDict:
@@ -178,7 +180,7 @@ class HardwareInfo:
             kernel = f"{system.system} {system.release}"
             kernel_update = system.version.split(";").pop(0).split(": ").pop(1)
             kernel_update = parser.parse(kernel_update, tzinfos=self.TZ)
-            kernel_update = kernel_update.astimezone(timezone("CET"))
+            kernel_update = kernel_update.astimezone(timezone("CET")).strftime(self.DT_FMT)
 
         else:
             name = "OS not identified"
@@ -216,3 +218,41 @@ class HardwareInfo:
         for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
             core_usage[core] = f"{percentage}%"
         return core_usage
+
+    def get_network(self):
+        interface_list: list[OrderedDict] = []
+        if self.os == "Darwin":
+            interfaces = psutil.net_if_addrs()
+            value: snicaddr
+            for value in interfaces["en0"]:
+                family = str(value.family).replace("AddressFamily.", "")
+                family = "IPv4" if family == "AF_INET" else family
+                family = "IPv6" if family == "AF_INET6" else family
+                broadcast = value.broadcast if value.broadcast is not None else ""
+                netmask = value.netmask if value.broadcast is not None else ""
+                interface_dict = OrderedDict({
+                    "address": value.address,
+                    "family": family,
+                    "broadcast": broadcast,
+                    "netmask": netmask
+                })
+                interface_list.append(interface_dict)
+            print(*interface_list, sep="\n")
+
+
+# if_addrs = psutil.net_if_addrs()
+# for interface_name, interface_addresses in if_addrs.items():
+#     for address in interface_addresses:
+#         print(f"=== Interface: {interface_name} ===")
+#         if str(address.family) == 'AddressFamily.AF_INET':
+#             print(f"  IP Address: {address.address}")
+#             print(f"  Netmask: {address.netmask}")
+#             print(f"  Broadcast IP: {address.broadcast}")
+#         elif str(address.family) == 'AddressFamily.AF_PACKET':
+#             print(f"  MAC Address: {address.address}")
+#             print(f"  Netmask: {address.netmask}")
+#             print(f"  Broadcast MAC: {address.broadcast}")
+# # get IO statistics since boot
+# net_io = psutil.net_io_counters()
+# print(f"Total Bytes Sent: {HardwareInfo().get_size(net_io.bytes_sent)}")
+# print(f"Total Bytes Received: {HardwareInfo().get_size(net_io.bytes_recv)}")
