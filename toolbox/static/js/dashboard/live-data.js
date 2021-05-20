@@ -53,6 +53,21 @@ $(function () {
 
 })
 
+function BarClass(percentage){$
+    let low_threshold = 50
+    let high_threshold = 75
+    if (percentage < low_threshold && percentage > 0){
+        //console.log("Green:" + percentage + "%")
+        return "bg-success"
+    }else if (percentage < high_threshold && percentage > low_threshold){
+        //console.log("Yellow:" + percentage + "%")
+        return "bg-warning"
+    }else if (percentage < 100 && percentage > high_threshold){
+        //console.log("Red:" + percentage + "%")
+        return "bg-danger"
+    }
+}
+
 /**Set new value for targeted percentage bar.
  * @param {number} percent_value CPU percentage value as integer.
  * @param {string} field_name Content of &lt;th> field belonging to percentage bar.
@@ -65,6 +80,8 @@ function SetPercentageBar(percent_value, field_name){
     let [percent, percent_str] = [percent_value, `${percent_value}%`]
     $elem.attr("aria-valuenow", percent).attr("data-bs-original-title", percent_str)
         .css("width", percent_str).text(percent_str)
+    $elem.removeClass("bg-success bg-warning bg-danger")
+    $elem.addClass(BarClass(Number(percent)))
 }
 
 /**Calls API for CPU stats.
