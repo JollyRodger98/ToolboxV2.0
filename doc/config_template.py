@@ -1,0 +1,6 @@
+SECRET_KEY = ""
+MONGODB_SETTINGS = {
+    'db': '',
+    'host': '127.0.0.1',
+    'port': 27017
+}
