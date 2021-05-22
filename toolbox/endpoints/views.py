@@ -11,8 +11,5 @@ def root():
 
 @app.route("/home", methods=["GET"])
 def home():
-    i = HardwareWidget().get_network()
-    print(f"\nFunction Return:")
-    print(i)
     return render_template('pages/home.html', hardware=HardwareWidget(),
                            form=DisplaySettingsForm(), std_profile=get_default_os_profile())
