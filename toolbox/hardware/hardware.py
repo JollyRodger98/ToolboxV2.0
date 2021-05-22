@@ -5,13 +5,34 @@ from pytz import timezone
 from dateutil import parser
 from datetime import datetime
 from collections import OrderedDict
-from psutil._common import snicaddr
-import enum
+from psutil._common import snicaddr, snicstats, NicDuplex
+from socket import AddressFamily
+import subprocess
 
 
 def sort_ordered_dict_by_key(ordered_dict: OrderedDict) -> OrderedDict:
     """Sorts and returns an OrderedDict by key"""
     return OrderedDict(sorted(ordered_dict.items(), key=lambda x: x[0]))
+
+
+def _parse_duplex(raw_data: NicDuplex) -> str:
+    if raw_data.name == "NIC_DUPLEX_FULL":
+        return "Full"
+    elif raw_data.name == "NIC_DUPLEX_HALF":
+        return "Half"
+    elif raw_data.name == "NIC_DUPLEX_UNKNOWN":
+        return "Unknown"
+
+
+def _parse_address_family(raw_data: AddressFamily):
+    if raw_data.name == "AF_INET":
+        return "IPv4"
+    elif raw_data.name == "AF_INET6":
+        return "IPv6"
+    elif raw_data.name == "AF_LINK":
+        return "MAC"
+    else:
+        return raw_data.name
 
 
 class HardwareInfo:
@@ -200,6 +221,101 @@ class HardwareInfo:
         })
         return return_dict
 
+    def get_network(self):
+        if self.os == "Windows":
+            interface_list: list[OrderedDict] = []
+            interface_status: dict = psutil.net_if_stats()
+            interfaces_addresses: dict = psutil.net_if_addrs()
+            status: snicstats
+            ipconfig_interface: dict = dict()
+            for name, status in interface_status.items():
+                if status.isup:
+                    for interface, data in self._get_ipconfig().items():
+                        if name in interface:
+                            ipconfig_interface = {interface: data}
+                            break
+                    address: snicaddr
+                    for address in interfaces_addresses[name]:
+                        family = _parse_address_family(address.family)
+                        speed = "1Gbit" if status.speed == 1000 else status.speed
+                        broadcast = address.broadcast if address.broadcast else ""
+                        duplex = _parse_duplex(status.duplex)
+                        state = status.isup
+                        if ipconfig_interface != {} and family == "IPv4":
+                            ipconf_int_name = list(ipconfig_interface.keys())[0]
+                            netmask = ipconfig_interface[ipconf_int_name]["Subnet Mask"]
+                            gateway = ipconfig_interface[ipconf_int_name]["Default Gateway"]
+                            dhcp_state = ipconfig_interface[ipconf_int_name]["DHCP Enabled"]
+                            dhcp_state = False if dhcp_state == "No" else dhcp_state
+                            dhcp_state = True if dhcp_state == "Yes" else dhcp_state
+                            dns = ipconfig_interface[ipconf_int_name]["DNS Servers"]
+                            autoconfig_state = \
+                                ipconfig_interface[ipconf_int_name]["Autoconfiguration Enabled"]
+                            autoconfig_state = False if autoconfig_state == "No" else autoconfig_state
+                            autoconfig_state = True if autoconfig_state == "Yes" else autoconfig_state
+                        else:
+                            netmask = address.netmask if address.netmask else ""
+                            gateway = ""
+                            dhcp_state = ""
+                            dns = ""
+                            autoconfig_state = ""
+
+                        interface_dict = OrderedDict({
+                            "name":               name,
+                            "address":            address.address,
+                            "family":             family,
+                            "broadcast":          broadcast,
+                            "netmask":            netmask,
+                            "speed":              speed,
+                            "duplex":             duplex,
+                            "state":              state,
+                            "gateway":            gateway,
+                            "dhcp enabled":       dhcp_state,
+                            "dns":                dns,
+                            "autoconfig enabled": autoconfig_state
+                        })
+                        interface_list.append(interface_dict)
+                ipconfig_interface = dict()
+        else:
+            interface_list = [OrderedDict({"name": "OS not identified"})]
+
+        return OrderedDict({"interface_list": interface_list})
+
+    @classmethod
+    def _get_ipconfig(cls):
+        ipconfig_raw_output = subprocess.check_output(["ipconfig", "-all"])
+        ipconfig_raw_output = ipconfig_raw_output.split(b"\r\n\r\n")
+        parsed_ipconfig = {}
+        interface_name: str = ""
+        for index, line in enumerate(ipconfig_raw_output):
+            if index % 2 == 0:
+                interface_name = line.strip().decode("UTF-8").replace(":", "")
+                parsed_ipconfig[interface_name] = []
+            elif index % 2 != 0:
+                parsed_ipconfig[interface_name] = list(map(lambda x: x.decode("UTF-8").strip(), line.splitlines()))
+                parsed_ipconfig[interface_name] = list(map(
+                    lambda x: {x.split(':')[0].replace('.', '').strip(): x.split(':')[1].strip()},
+                    parsed_ipconfig[interface_name]
+                ))
+                tmp = {}
+                for item in parsed_ipconfig[interface_name]:
+                    tmp.update(item)
+                parsed_ipconfig[interface_name] = tmp
+                del tmp
+        tmp = parsed_ipconfig
+        for i, v in tmp.items():
+            for int_name in parsed_ipconfig:
+                for field_name in parsed_ipconfig[int_name]:
+                    if not v.get(field_name):
+                        tmp[i].update({field_name: ""})
+
+        parsed_ipconfig = OrderedDict(tmp)
+        for int_name, int_data in parsed_ipconfig.items():
+            parsed_ipconfig[int_name] = OrderedDict(sorted(int_data.items()))
+
+        return parsed_ipconfig
+
+
     @staticmethod
     def get_os():
         return platform.system()
@@ -231,25 +347,6 @@ class HardwareInfo:
             core_usage[core] = f"{percentage}%"
         return core_usage
 
-    def get_network(self):
-        interface_list: list[OrderedDict] = []
-        if self.os == "Darwin":
-            interfaces = psutil.net_if_addrs()
-            value: snicaddr
-            for value in interfaces["en0"]:
-                family = str(value.family).replace("AddressFamily.", "")
-                family = "IPv4" if family == "AF_INET" else family
-                family = "IPv6" if family == "AF_INET6" else family
-                broadcast = value.broadcast if value.broadcast is not None else ""
-                netmask = value.netmask if value.broadcast is not None else ""
-                interface_dict = OrderedDict({
-                    "address": value.address,
-                    "family": family,
-                    "broadcast": broadcast,
-                    "netmask": netmask
-                })
-                interface_list.append(interface_dict)
-            print(*interface_list, sep="\n")
 
 
 # if_addrs = psutil.net_if_addrs()
@@ -268,3 +365,5 @@ class HardwareInfo:
 # net_io = psutil.net_io_counters()
 # print(f"Total Bytes Sent: {HardwareInfo().get_size(net_io.bytes_sent)}")
 # print(f"Total Bytes Received: {HardwareInfo().get_size(net_io.bytes_recv)}")
+
+HardwareInfo().get_network()
