@@ -20,7 +20,10 @@ $(function () {
             toggle_states[button_id] = false
             clearInterval(interval_id[button_id])
         }else if (!toggle_states[button_id]){
-            interval_id[button_id] = setInterval(function (){interval_functions[button_id]()}, Number(interval_seconds)*1000)
+            interval_id[button_id] = setInterval(function (){
+                interval_functions[button_id](Number(interval_seconds))
+            }, Number(interval_seconds)*1000)
+
             interval_id_list.push(interval_id[button_id])
             toggle_states[button_id] = true
         }
@@ -53,7 +56,7 @@ $(function () {
 
 })
 
-function BarClass(percentage){$
+function BarClass(percentage){
     let low_threshold = 50
     let high_threshold = 75
     if (percentage < low_threshold && percentage > 0){
@@ -86,10 +89,11 @@ function SetPercentageBar(percent_value, field_name){
 
 /**Calls API for CPU stats.
  *
+ * @param {number} interval Timeframe in which CPU stats are collected.
  * @return {undefined}
  */
-function RefreshCPUTotal() {
-    let call =  $.get({url: "/tb-api?prop=cpu-percent", dataType: "json"})
+function RefreshCPUTotal(interval = 1) {
+    let call =  $.get({url: "/api/hardware", dataType: "json", data: {"interval": interval, "prop": "cpu-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["cpu-percent"])
         SetPercentageBar(percentage, "CPU Usage Total")
@@ -101,7 +105,7 @@ function RefreshCPUTotal() {
  * @return {undefined}
  */
 function RefreshMemoryTotal() {
-    let call =  $.get({url: "/tb-api?prop=memory-percent", dataType: "json"})
+    let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "memory-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["memory-percent"])
         SetPercentageBar(percentage, "Percent")
@@ -110,10 +114,11 @@ function RefreshMemoryTotal() {
 
 /**Calls API for CPU stats by core.
  *
+ * @param {number} interval Timeframe in which CPU stats are collected.
  * @return {undefined}
  */
-function RefreshCPUByCore(){
-    let call =  $.get({url: "/tb-api?prop=cpu-by-core-percent", dataType: "json"})
+function RefreshCPUByCore(interval = 1){
+    let call =  $.get({url: "/api/hardware", dataType: "json", data: {"interval": interval, "prop": "cpu-by-core-percent"}})
     call.done(function (data, status) {
         $('th:contains("CPU Usage By Core")').next().html(
             data["cpu-by-core-percent"]

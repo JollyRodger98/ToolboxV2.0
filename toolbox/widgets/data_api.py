@@ -9,8 +9,14 @@ class WidgetDataAPI:
         pass
 
     @classmethod
-    def get_cpu_usage(cls):
-        cpu_data = cls.HWinfo.get_cpu_percentage()
+    def get_cpu_usage(cls, interval: int = 1) -> float:
+        """Parsing CPU data collected by Hardware class
+
+        :param interval: Seconds during which data is collected.
+        :return: CPU percentage value.
+        :rtype: float
+        """
+        cpu_data = cls.HWinfo.get_cpu_percentage(interval)
         cpu_data = float(cpu_data.replace("%", ""))
         return cpu_data
 
@@ -21,8 +27,14 @@ class WidgetDataAPI:
         return cpu_data
 
     @classmethod
-    def get_cpu_usage_by_core(cls):
-        cpu_data = cls.HWinfo.get_cpu_percentage_by_core()
+    def get_cpu_usage_by_core(cls, interval: int = 1) -> Markup:
+        """Parsing by core CPU data collected by Hardware class
+
+        :param interval: Seconds during which data is collected.
+        :return: Markup string with cpu data, ready to be inserted into widget.
+        :rtype: Markup
+        """
+        cpu_data = cls.HWinfo.get_cpu_percentage_by_core(interval)
 
         cores = []
         for index, field in enumerate(cpu_data):
