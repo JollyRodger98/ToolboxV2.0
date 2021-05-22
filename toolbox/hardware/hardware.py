@@ -205,17 +205,29 @@ class HardwareInfo:
         return platform.system()
 
     @staticmethod
-    def get_cpu_percentage() -> str:
-        return f"{psutil.cpu_percent(interval=1)}%"
+    def get_cpu_percentage(interval: int = 1) -> str:
+        """Collects total CPU usage in percent during specified timeframe.
+
+        :param interval: Seconds during which data is collected.
+        :return: Returns percentage value for CPU
+        :rtype: str
+        """
+        return f"{psutil.cpu_percent(interval=interval)}%"
 
     @staticmethod
     def get_memory_percentage() -> str:
         return f"{psutil.virtual_memory().percent}%"
 
     @staticmethod
-    def get_cpu_percentage_by_core():
-        core_usage: dict[int, str] = {}
-        for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+    def get_cpu_percentage_by_core(interval: int = 1) -> dict[int, str]:
+        """Collects CPU usage by core in percent during specified timeframe.
+
+        :param interval: Seconds during which data is collected.
+        :return: Returns percentage value for each core.
+        :rtype: dict[int, str]
+        """
+        core_usage = {}
+        for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=interval)):
             core_usage[core] = f"{percentage}%"
         return core_usage
 
