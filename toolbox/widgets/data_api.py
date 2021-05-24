@@ -49,3 +49,13 @@ class WidgetDataAPI:
 
         return row_data
 
+    @classmethod
+    def get_gpu_memory_used(cls) -> float:
+        gpu_memory_used = cls.HWinfo.get_gpu_memory_used()
+        gpu_memory_used = float(gpu_memory_used.replace("%", ""))
+        return gpu_memory_used
+
+    @classmethod
+    def get_gpu_temperature(cls) -> str:
+        gpu_temperature = cls.HWinfo.get_gpu_temperature()
+        return f"{gpu_temperature:.0f}\u00B0"
