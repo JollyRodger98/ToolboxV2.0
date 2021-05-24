@@ -246,7 +246,8 @@ class HardwareInfo:
                     address: snicaddr
                     for address in interfaces_addresses[name]:
                         family = _parse_address_family(address.family)
-                        speed = "1Gbit" if status.speed == 1000 else status.speed
+                        # speed = "1Gbit" if status.speed == 1000 else status.speed
+                        speed = status.speed
                         broadcast = address.broadcast if address.broadcast else ""
                         duplex = _parse_duplex(status.duplex)
                         state = status.isup
