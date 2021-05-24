@@ -44,7 +44,7 @@ table_data_percentage_template = Markup(
     f"        <div class=\"progress-bar percentage-bar %(bar_class)s\" role=\"progressbar\" "
     f"             style=\"width: %(percentage)s%%;\" aria-valuenow=\"%(percentage)s\" aria-valuemin=\"0\" "
     f"             aria-valuemin=\"100\" data-bs-toggle=\"tooltip\" title=\"%(percentage)s%%\" "
-    f"             data-bs-placement=\"left\">\n"
+    f"             data-bs-placement=\"left\" id=\"%(bar_id)s\">\n"
     f"            %(percentage)s%%\n"
     f"        </div>\n"
     f"    </div>\n"
