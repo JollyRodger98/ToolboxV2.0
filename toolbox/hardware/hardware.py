@@ -1,18 +1,22 @@
-import re
-import psutil
 import platform
-from pytz import timezone
-from dateutil import parser
-from datetime import datetime
-from collections import OrderedDict
-from psutil._common import snicaddr, snicstats, NicDuplex
-from socket import AddressFamily
+import re
 import subprocess
+from collections import OrderedDict
+from datetime import datetime
+from socket import AddressFamily
+from ._ipconfig import _get_ipconfig
+
+import psutil
+from dateutil import parser
+from psutil._common import snicaddr, snicstats, NicDuplex
+from pytz import timezone
+import GPUtil
+from GPUtil import GPU
 
 
-def sort_ordered_dict_by_key(ordered_dict: OrderedDict) -> OrderedDict:
-    """Sorts and returns an OrderedDict by key"""
-    return OrderedDict(sorted(ordered_dict.items(), key=lambda x: x[0]))
+# def sort_ordered_dict_by_key(ordered_dict: OrderedDict) -> OrderedDict:
+#     """Sorts and returns an OrderedDict by key"""
+#     return OrderedDict(sorted(ordered_dict.items(), key=lambda x: x[0]))
 
 
 def _parse_duplex(raw_data: NicDuplex) -> str:
