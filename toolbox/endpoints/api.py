@@ -16,6 +16,10 @@ def tb_api():
     elif request_prop == "cpu-by-core-percent":
         interval = int(request.args["interval"])
         return_data = {"cpu-by-core-percent": WidgetDataAPI.get_cpu_usage_by_core(interval)}
+    elif request_prop == "gpu-memory-percent":
+        return_data = {"gpu-memory-percent": WidgetDataAPI.get_gpu_memory_used()}
+    elif request_prop == "gpu-temperature":
+        return_data = {"gpu-temperature": WidgetDataAPI.get_gpu_temperature()}
     else:
         return_data = {"Property not found": "Property not found"}
 
