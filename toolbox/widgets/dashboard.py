@@ -7,6 +7,8 @@ from toolbox.hardware import HardwareInfo
 from toolbox.models import DashboardProfiles, widget_list
 from ._html import table_template, widget_card_template, table_col_head_template, table_row_head_template, \
     table_data_template, table_row_template, alert_danger_template, table_data_percentage_template
+import ipaddress
+from ipaddress import IPv4Network, IPv4Interface
 
 
 def _get_profile(profile: str, widget: str) -> DashboardProfiles:
@@ -68,6 +70,20 @@ def _col_visible(field_name: str, display_settings: list):
         return ""
 
 
+def _interface_state(interface_state):
+    if interface_state:
+        return Markup('<span class="badge bg-success">UP</span>')
+    elif not interface_state:
+        return Markup('<span class="badge bg-danger">DOWN</span>')
+
+
+def _interface_ip_state(dhcp_setting):
+    if dhcp_setting:
+        return "DHCP"
+    elif not dhcp_setting:
+        return "Static"
+
+
 class HardwareWidget(HardwareInfo):
 
     def __init__(self):
@@ -105,6 +121,10 @@ class HardwareWidget(HardwareInfo):
             widget = self._cpu_widget(profile)
         elif widget_name.lower() == "partitions":
             widget = self._partitions_widget(profile)
+        elif widget_name.lower() == "network":
+            widget = self._network_widget(profile)
+        elif widget_name.lower() == "gpu":
+            widget = self._gpu_widget(profile)
         else:
             li_widget_list = [f"<li>{i}</li>" for i in self.widget_list]
             ul_widget_list = Markup("<ul>%s</ul>") % Markup(''.join(li_widget_list))
@@ -114,6 +134,69 @@ class HardwareWidget(HardwareInfo):
             widget = self._widget_card % {"card_title": "ERROR", "card_content": card_content, "card_classes": ""}
 
         return widget
+
+    def _gpu_widget(self, profile: str) -> Markup:
+        table_data: list = list()
+        # noinspection PyPep8Naming
+        WIDGET = "gpu"
+        user_profile = _get_profile(profile, WIDGET)
+        card_classes = [_widget_visible(user_profile.widgets.gpu.display_widget)]
+
+        for name, data in self.get_gpu().items():
+            if name.lower() == "memory used percent":
+                row_content = self._generate_percentage_row("memory used %".title(), data, "bar-gpu-memory-used")
+            else:
+                if name.lower() == "temperature":
+                    data = f"{int(data)}\u00B0"
+                row_content = self._table_row_head % {"head_class": "", "head_content": name.title()} + \
+                    self._table_data % {"cell_class": "", "cell_content": data}
+            table_data.append(
+                self._generate_table_row(name, user_profile.widgets.gpu.display_fields, row_content))
+        # bytes.fromhex("0xB0"[2:]).decode("unicode_escape")
+        return self._generate_std_widget("GPU", table_data, card_classes)
+
+    def _network_widget(self, profile: str) -> Markup:
+        table_data: list = list()
+        # noinspection PyPep8Naming
+        WIDGET = "network"
+        user_profile = _get_profile(profile, WIDGET)
+        card_classes = [_widget_visible(user_profile.widgets.network.display_widget)]
+        network_data_list = self.get_network()["data_list"]
+        for interface in network_data_list:
+            if interface["family"] == "MAC":
+                row_content = self._table_row_head % {"head_class": "", "head_content": "MAC"} + \
+                              self._table_data % {"cell_class": "", "cell_content": interface["address"]}
+                table_data.append(
+                    self._generate_table_row("name", user_profile.widgets.network.display_fields, row_content,
+                                             override_display=True))
+            elif interface["family"] == "IPv4" and interface["address"] != "127.0.0.1":
+                for name, data in interface.items():
+                    cell_class = ""
+                    display_name = ""
+                    name = name.title()
+                    if name.lower() == "dhcp enabled":
+                        display_name = "IP state"
+                        data = _interface_ip_state(data)
+                    elif name.lower() == "dns":
+                        display_name = "DNS"
+                    elif name.lower() == "state":
+                        data = _interface_state(data)
+                    elif name.lower() == "speed":
+                        display_name = "Duplex/Speed"
+                        data = f"{interface['duplex']}/{data}"
+                    elif name.lower() == "address":
+                        ip_interface: IPv4Interface = ipaddress.ip_interface(f"{data}/{interface['netmask']}")
+                        if ip_interface.with_prefixlen.endswith("24"):
+                            data = f"{ip_interface.with_prefixlen}"
+                        else:
+                            data = f"{ip_interface.with_prefixlen} ({ip_interface.netmask})"
+
+                    row_content = self._table_row_head % {"head_class": "", "head_content": display_name or name} + \
+                        self._table_data % {"cell_class": cell_class, "cell_content": data}
+                    table_data.append(
+                        self._generate_table_row(name, user_profile.widgets.network.display_fields, row_content))
+
+        return self._generate_std_widget(WIDGET.title(), table_data, card_classes)
 
     def _partitions_widget(self, profile: str) -> Markup:
         table_data: list = list()
