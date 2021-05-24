@@ -341,13 +341,14 @@ class HardwareWidget(HardwareInfo):
         return self._widget_card % {"card_title": card_title, "card_content": table, "card_classes": card_classes}
 
     def _generate_table_row(self, field_name: str, display_settings: list,
-                            content: Markup, classes: list = None) -> Markup:
+                            content: Markup, classes: list = None, override_display: bool = None) -> Markup:
         """Used in loop to generate a table row
 
         :param field_name: Name of the current table row data.
         :param display_settings: Profile field display settings.
         :param content: Row content.
         :param classes: Classes to be applied to table row.
+        :param override_display: Override default display settings for row.
         :return: Markup table row string.
         :rtype: Markup
         """
@@ -355,6 +356,13 @@ class HardwareWidget(HardwareInfo):
             classes = []
 
         if field_name.lower() not in display_settings:
+            classes.append("visually-hidden")
+
+        if override_display is None:
+            pass
+        elif override_display:
+            classes.remove("visually-hidden")
+        elif not override_display:
             classes.append("visually-hidden")
 
         row_classes = " ".join(classes)
