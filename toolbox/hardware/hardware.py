@@ -341,23 +341,12 @@ class HardwareInfo:
             core_usage[core] = f"{percentage}%"
         return core_usage
 
+    @staticmethod
+    def get_gpu_memory_used() -> str:
+        gpu: GPU = (GPUtil.getGPUs()).pop(0)
+        return f"{(gpu.memoryUsed*100)/gpu.memoryTotal:.1f}%"
 
-
-# if_addrs = psutil.net_if_addrs()
-# for interface_name, interface_addresses in if_addrs.items():
-#     for address in interface_addresses:
-#         print(f"=== Interface: {interface_name} ===")
-#         if str(address.family) == 'AddressFamily.AF_INET':
-#             print(f"  IP Address: {address.address}")
-#             print(f"  Netmask: {address.netmask}")
-#             print(f"  Broadcast IP: {address.broadcast}")
-#         elif str(address.family) == 'AddressFamily.AF_PACKET':
-#             print(f"  MAC Address: {address.address}")
-#             print(f"  Netmask: {address.netmask}")
-#             print(f"  Broadcast MAC: {address.broadcast}")
-# # get IO statistics since boot
-# net_io = psutil.net_io_counters()
-# print(f"Total Bytes Sent: {HardwareInfo().get_size(net_io.bytes_sent)}")
-# print(f"Total Bytes Received: {HardwareInfo().get_size(net_io.bytes_recv)}")
-
-HardwareInfo().get_network()
+    @staticmethod
+    def get_gpu_temperature() -> float:
+        gpu: GPU = (GPUtil.getGPUs()).pop(0)
+        return gpu.temperature
