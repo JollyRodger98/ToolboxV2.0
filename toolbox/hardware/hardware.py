@@ -162,16 +162,21 @@ class HardwareInfo:
         :return: dict with local cpu specs
         :rtype: dict
         """
-        cpu_frequency = psutil.cpu_freq()
-        core_usage = {}
-        for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
-            core_usage[core] = f"{percentage}%"
-        return_dict = OrderedDict({
-            "physical cores": psutil.cpu_count(logical=False), "logical cores": psutil.cpu_count(logical=True),
-            "min frequency": f"{cpu_frequency.min/1000:.2f} Khz", "max frequency": f"{cpu_frequency.max/1000:.2f} Khz",
-            "current frequency": f"{cpu_frequency.current/1000:.2f} Khz", "cpu usage by core": core_usage,
-            "cpu usage total": f"{psutil.cpu_percent()}%"
-        })
+        if self.os == "Darwin" or self.os == "Windows":
+            cpu_frequency = psutil.cpu_freq()
+            core_usage = {}
+            for core, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+                core_usage[core] = f"{percentage}%"
+            return_dict = OrderedDict({
+                "physical cores": psutil.cpu_count(logical=False), "logical cores": psutil.cpu_count(logical=True),
+                "min frequency": f"{cpu_frequency.min/1000:.2f} Khz", "max frequency": f"{cpu_frequency.max/1000:.2f} Khz",
+                "current frequency": f"{cpu_frequency.current/1000:.2f} Khz", "cpu usage by core": core_usage,
+                "cpu usage total": f"{psutil.cpu_percent()}%"
+            })
+        else:
+            return_dict = OrderedDict({
+                "physical cores": "OS not identified"
+            })
         return return_dict
 
     def get_system(self) -> OrderedDict:
