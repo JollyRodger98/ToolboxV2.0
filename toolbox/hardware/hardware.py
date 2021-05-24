@@ -281,40 +281,24 @@ class HardwareInfo:
 
         return OrderedDict({"interface_list": interface_list})
 
-    @classmethod
-    def _get_ipconfig(cls):
-        ipconfig_raw_output = subprocess.check_output(["ipconfig", "-all"])
-        ipconfig_raw_output = ipconfig_raw_output.split(b"\r\n\r\n")
-        parsed_ipconfig = {}
-        interface_name: str = ""
-        for index, line in enumerate(ipconfig_raw_output):
-            if index % 2 == 0:
-                interface_name = line.strip().decode("UTF-8").replace(":", "")
-                parsed_ipconfig[interface_name] = []
-            elif index % 2 != 0:
-                parsed_ipconfig[interface_name] = list(map(lambda x: x.decode("UTF-8").strip(), line.splitlines()))
-                parsed_ipconfig[interface_name] = list(map(
-                    lambda x: {x.split(':')[0].replace('.', '').strip(): x.split(':')[1].strip()},
-                    parsed_ipconfig[interface_name]
-                ))
-                tmp = {}
-                for item in parsed_ipconfig[interface_name]:
-                    tmp.update(item)
-                parsed_ipconfig[interface_name] = tmp
-                del tmp
-        tmp = parsed_ipconfig
-        for i, v in tmp.items():
-            for int_name in parsed_ipconfig:
-                for field_name in parsed_ipconfig[int_name]:
-                    if not v.get(field_name):
-                        tmp[i].update({field_name: ""})
+    def get_gpu(self):
+        if self.os == "Windows":
+            gpu: GPU = (GPUtil.getGPUs()).pop(0)
+            gpu_data = OrderedDict({
+                "name":                gpu.name,
+                "memory total":        self.get_size(gpu.memoryTotal*(1024**2)),
+                "memory free":         self.get_size(gpu.memoryFree*(1024**2)),
+                "memory free percent": f"{(gpu.memoryFree*100)/gpu.memoryTotal:.1f}%",
+                "memory used":         self.get_size(gpu.memoryUsed*(1024**2)),
+                "memory used percent": f"{(gpu.memoryUsed*100)/gpu.memoryTotal:.1f}%",
+                "temperature":         gpu.temperature,
+                "driver":              gpu.driver
+            })
 
-        parsed_ipconfig = OrderedDict(tmp)
-        for int_name, int_data in parsed_ipconfig.items():
-            parsed_ipconfig[int_name] = OrderedDict(sorted(int_data.items()))
+        else:
+            gpu_data = OrderedDict({"": "OS not identified"})
 
-        return parsed_ipconfig
-
+        return gpu_data
 
     @staticmethod
     def get_os():
