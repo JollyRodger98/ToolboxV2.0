@@ -74,17 +74,19 @@ function BarClass(percentage){
 /**Set new value for targeted percentage bar.
  * @param {number} percent_value CPU percentage value as integer.
  * @param {string} field_name Content of &lt;th> field belonging to percentage bar.
+ * @param {string} bar_id Unique ID of percentage bar
  * @return {undefined}
  */
-function SetPercentageBar(percent_value, field_name){
+function SetPercentageBar(percent_value, field_name, bar_id){
     if (typeof(percent_value) !== "number" || typeof(percent_value) === "undefined" || isNaN(percent_value))return
     if (typeof(field_name) !== "string" || typeof(field_name) === "undefined")return
-    let $elem = $(`th:contains("${field_name}")`).next().children().children()
+    if (typeof(bar_id) !== "string" || typeof(bar_id) === "undefined")return
+    let $percent_bar = $(`div#${bar_id}`)
     let [percent, percent_str] = [percent_value, `${percent_value}%`]
-    $elem.attr("aria-valuenow", percent).attr("data-bs-original-title", percent_str)
+    $percent_bar.attr("aria-valuenow", percent).attr("data-bs-original-title", percent_str)
         .css("width", percent_str).text(percent_str)
-    $elem.removeClass("bg-success bg-warning bg-danger")
-    $elem.addClass(BarClass(Number(percent)))
+    $percent_bar.removeClass("bg-success bg-warning bg-danger")
+    $percent_bar.addClass(BarClass(Number(percent)))
 }
 
 /**Calls API for CPU stats.
