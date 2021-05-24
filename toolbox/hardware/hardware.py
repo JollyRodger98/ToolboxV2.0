@@ -239,7 +239,7 @@ class HardwareInfo:
             ipconfig_interface: dict = dict()
             for name, status in interface_status.items():
                 if status.isup:
-                    for interface, data in self._get_ipconfig().items():
+                    for interface, data in _get_ipconfig().items():
                         if name in interface:
                             ipconfig_interface = {interface: data}
                             break
