@@ -52,8 +52,8 @@
 
                         <div class="row g-1">
                             <div class="col-auto">
-                                <button class="btn btn-outline-TBPrimary shadow-none" id="toggle-all">
-                                    <i class="bi bi-toggle-off"></i>
+                                <button class="btn btn-outline-TBPrimary shadow-none invisible p-0 px-3" id="toggle-all">
+                                    <i class="bi bi-toggle-off visible fs-4"></i>
                                 </button>
                             </div>
                             {% call live_button("cpu-percent") -%}
@@ -64,6 +64,12 @@
                             {%- endcall %}
                             {% call live_button("cpu-by-core-percent") -%}
                                 <span> CPU by Core</span>
+                            {%- endcall %}
+                            {% call live_button("gpu-memory-percent") -%}
+                                <span> GPU Memory</span>
+                            {%- endcall %}
+                            {% call live_button("gpu-temperature") -%}
+                                <span> GPU Temperature</span>
                             {%- endcall %}
 
                             <div class="col">
@@ -107,6 +113,8 @@
         {{ hardware.get_widget("memory", std_profile) }}
         {{ hardware.get_widget("partitions", std_profile) }}
         {{ hardware.get_widget("cpu", std_profile) }}
+        {{ hardware.get_widget("network", std_profile) }}
+        {{ hardware.get_widget("gpu", std_profile) }}
 
     </div>
 
