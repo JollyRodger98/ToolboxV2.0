@@ -11070,4 +11070,8 @@ textarea.form-control-lg {
   animation-duration: 1.5s;
 }
 
+#toggle-all.btn-outline-TBPrimary:hover {
+  color: #696969;
+}
+
 /*# sourceMappingURL=custom.css.map */
