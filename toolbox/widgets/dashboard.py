@@ -306,17 +306,18 @@ class HardwareWidget(HardwareInfo):
 
         return self._generate_std_widget(WIDGET.upper(), table_data, card_classes)
 
-    def _generate_percentage_row(self, key: str, value: str) -> Markup:
+    def _generate_percentage_row(self, field_name: str, value: str, bar_id: str) -> Markup:
         """Generate table row content with percentage-bar
 
-        :param key: Field name
+        :param field_name: Field name for <th>
         :param value: Field value (percentage)
         :return: Table row content (th & td)
         """
         percentage = float(value.replace('%', ''))
         percentage_class = _percentage_bar_class(percentage)
-        row_head = self._table_row_head % {"head_class": "", "head_content": key}
-        row_data = self._table_data_percentage % {"percentage": percentage, "bar_class": percentage_class}
+        row_head = self._table_row_head % {"head_class": "", "head_content": field_name}
+        row_data = self._table_data_percentage % {"percentage": percentage, "bar_class": percentage_class,
+                                                  "bar_id": bar_id}
         return row_head + row_data
 
     def _generate_std_widget(self, card_title: str, table_data: list, card_classes: list,
