@@ -208,15 +208,16 @@ class HardwareWidget(HardwareInfo):
 
         for partition in partition_data_list:
             row_content = []
-            for data in partition.items():
-                if data[0].lower() == "used space percent":
-                    percent = float(data[1].replace("%", ""))
+            for name, data in partition.items():
+                if name.lower() == "used space percent":
+                    percent = float(data.replace("%", ""))
                     percentage_class = _percentage_bar_class(percent)
                     row_content.append(self._table_data_percentage % {"percentage": percent,
-                                                                      "bar_class": percentage_class})
+                                                                      "bar_class": percentage_class,
+                                                                      "bar_id": ""})
                 else:
-                    col_visibility = _col_visible(data[0], user_profile.widgets.partitions.display_fields)
-                    row_content.append(self._table_data % {"cell_class": col_visibility, "cell_content": data[1]})
+                    col_visibility = _col_visible(name, user_profile.widgets.partitions.display_fields)
+                    row_content.append(self._table_data % {"cell_class": col_visibility, "cell_content": data})
             table_data.append(
                 self._table_row % {"row_class": "text-nowrap", "row_content": Markup("".join(row_content))}
             )
@@ -242,15 +243,15 @@ class HardwareWidget(HardwareInfo):
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.memory.display_widget)]
 
-        for data in self.get_memory().items():
-            if data[0].lower() == "percent":
-                row_content = self._generate_percentage_row(data[0].title(), data[1])
+        for name, data in self.get_memory().items():
+            if name.lower() == "percent":
+                row_content = self._generate_percentage_row(name.title(), data, "bar-memory-used")
             else:
-                row_content = self._table_row_head % {"head_class": "", "head_content": data[0].title()} + \
-                              self._table_data % {"cell_class": "", "cell_content": data[1]}
+                row_content = self._table_row_head % {"head_class": "", "head_content": name.title()} + \
+                              self._table_data % {"cell_class": "", "cell_content": data}
 
             table_data.append(
-                self._generate_table_row(data[0], user_profile.widgets.memory.display_fields, row_content))
+                self._generate_table_row(name, user_profile.widgets.memory.display_fields, row_content))
 
         return self._generate_std_widget(WIDGET.title(), table_data, card_classes)
 
@@ -261,11 +262,11 @@ class HardwareWidget(HardwareInfo):
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.system.display_widget)]
 
-        for data in self.get_system().items():
-            row_content = self._table_row_head % {"head_class": "", "head_content": data[0].title()} + \
-                          self._table_data % {"cell_class": "", "cell_content": data[1]}
+        for name, data in self.get_system().items():
+            row_content = self._table_row_head % {"head_class": "", "head_content": name.title()} + \
+                          self._table_data % {"cell_class": "", "cell_content": data}
             table_data.append(
-                self._generate_table_row(data[0], user_profile.widgets.system.display_fields, row_content))
+                self._generate_table_row(name, user_profile.widgets.system.display_fields, row_content))
 
         return self._generate_std_widget(WIDGET.title(), table_data, card_classes)
 
@@ -276,14 +277,14 @@ class HardwareWidget(HardwareInfo):
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.cpu.display_widget)]
 
-        for data in self.get_cpu().items():
-            field_name = data[0].title().replace("Cpu", "CPU") if "cpu" in data[0].lower() else data[0].title()
+        for name, data in self.get_cpu().items():
+            field_name = name.title().replace("Cpu", "CPU") if "cpu" in name.lower() else name.title()
             alignment = ""
 
-            if data[0].lower() == "cpu usage by core":
+            if name.lower() == "cpu usage by core":
                 cores = []
-                for index, field in enumerate(data[1]):
-                    percentage = int(float(data[1][field].replace('%', '')))
+                for index, field in enumerate(data):
+                    percentage = int(float(data[field].replace('%', '')))
                     cores.append(f"<span class=\"text-nowrap\">"
                                  f"<strong>{field + 1:02d}</strong>:{percentage:02d}%;"
                                  f"</span>")
@@ -294,14 +295,14 @@ class HardwareWidget(HardwareInfo):
                 alignment = "align-middle"
                 row_content = self._table_row_head % {"head_class": "", "head_content": field_name} + \
                     self._table_data % {"cell_class": "font-TBMonospace h6", "cell_content": row_data}
-            elif data[0].lower() == "cpu usage total":
-                row_content = self._generate_percentage_row(field_name, data[1])
+            elif name.lower() == "cpu usage total":
+                row_content = self._generate_percentage_row(field_name, data, "bar-cpu-used")
             else:
-                row_content = self._table_row_head % {"head_class": "", "head_content": data[0].title()} + \
-                              self._table_data % {"cell_class": "", "cell_content": data[1]}
+                row_content = self._table_row_head % {"head_class": "", "head_content": name.title()} + \
+                              self._table_data % {"cell_class": "", "cell_content": data}
 
             table_data.append(
-                self._generate_table_row(data[0], user_profile.widgets.cpu.display_fields, row_content, [alignment]))
+                self._generate_table_row(name, user_profile.widgets.cpu.display_fields, row_content, [alignment]))
 
         return self._generate_std_widget(WIDGET.upper(), table_data, card_classes)
 
