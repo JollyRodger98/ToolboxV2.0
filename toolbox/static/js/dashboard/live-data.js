@@ -1,11 +1,14 @@
 if(sessionStorage.getItem("interval_seconds") == null) {sessionStorage.setItem("interval_seconds", "10")}
 $(function () {
-    let interval_id = {"cpu-percent": "", "memory-percent": "", "cpu-by-core-percent": ""}
-    let toggle_states = {"cpu-percent": false, "memory-percent": false, "cpu-by-core-percent": false}
+    let interval_id = {"cpu-percent": "", "memory-percent": "", "cpu-by-core-percent": "", "gpu-memory-percent": "", "gpu-temperature": ""}
+    let toggle_states = {"cpu-percent": false, "memory-percent": false, "cpu-by-core-percent": false, "gpu-memory-percent": false, "gpu-temperature": false}
     let interval_seconds = sessionStorage.getItem("interval_seconds")
-    let interval_functions = {"cpu-percent": RefreshCPUTotal, "memory-percent": RefreshMemoryTotal, "cpu-by-core-percent": RefreshCPUByCore}
+    let interval_functions = {"cpu-percent": RefreshCPUTotal, "memory-percent": RefreshMemoryTotal, "cpu-by-core-percent": RefreshCPUByCore, "gpu-memory-percent": RefreshGPUMemory, "gpu-temperature": RefreshGPUTemperature}
     let interval_id_list = []// List to save all Interval IDs in case of double/overlapping intervals
 
+    $("#test-button").on("click", function (){
+        console.log("Test button clicked!")
+    })
     //Select form handling and event trigger
     $("select.live-data-time-select").on("change", function () {
         interval_seconds = $(this).prop("value")
@@ -35,12 +38,12 @@ $(function () {
         //$("button.live-data-toggle").trigger("click")
         let icon = $(this).children("i")
         if ((icon.attr("class")).indexOf("bi-toggle-off") >= 0){
-            icon.removeClass("bi-toggle-off").addClass("bi-toggle-on")
+            icon.removeClass("bi-toggle-off").addClass("bi-toggle-on text-success")
             for (const toggleStatesKey in toggle_states) {
                 toggle_states[toggleStatesKey] = false
             }
         }else {
-            icon.addClass("bi-toggle-off").removeClass("bi-toggle-on")
+            icon.addClass("bi-toggle-off").removeClass("bi-toggle-on text-success")
             for (const toggleStatesKey in toggle_states) {
                 toggle_states[toggleStatesKey] = true
             }
@@ -56,6 +59,11 @@ $(function () {
 
 })
 
+/**Return corresponding CSS class based on percentage value.
+ *
+ * @param {number} percentage Percentage value needed to return appropriate CSS class.
+ * @return {string} CSS background color class
+ */
 function BarClass(percentage){
     let low_threshold = 50
     let high_threshold = 75
@@ -98,7 +106,7 @@ function RefreshCPUTotal(interval = 1) {
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"interval": interval, "prop": "cpu-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["cpu-percent"])
-        SetPercentageBar(percentage, "CPU Usage Total")
+        SetPercentageBar(percentage, "CPU Usage Total", "bar-cpu-used")
     })
 }
 
@@ -110,7 +118,32 @@ function RefreshMemoryTotal() {
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "memory-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["memory-percent"])
-        SetPercentageBar(percentage, "Percent")
+        SetPercentageBar(percentage, "Percent", "bar-memory-used")
+    })
+}
+
+/**Calls API for GPU memory stats.
+ *
+ * @return {undefined}
+ */
+function RefreshGPUMemory() {
+    let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "gpu-memory-percent"}})
+    call.done(function (data, success) {
+        let percentage = Number(data["gpu-memory-percent"])
+        SetPercentageBar(percentage, "Percent", "bar-gpu-memory-used")
+    })
+}
+
+/**Calls API for GPU temperature stats.
+ *
+ * @return {undefined}
+ */
+function RefreshGPUTemperature() {
+    let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "gpu-temperature"}})
+    call.done(function (data, success) {
+        let temperature = data["gpu-temperature"]
+        $("div.card-subtitle:contains('GPU')").parent().find("th:contains('Temperature')").next().text(temperature)
+        // SetPercentageBar(percentage, "Percent", "bar-gpu-memory-used")
     })
 }
 
