@@ -12,6 +12,8 @@ class Widgets(EmbeddedDocument):
     system: WidgetData = EmbeddedDocumentField(WidgetData)
     partitions: WidgetData = EmbeddedDocumentField(WidgetData)
     cpu: WidgetData = EmbeddedDocumentField(WidgetData)
+    network: WidgetData = EmbeddedDocumentField(WidgetData)
+    gpu: WidgetData = EmbeddedDocumentField(WidgetData)
 
 
 class DashboardProfiles(Document):
