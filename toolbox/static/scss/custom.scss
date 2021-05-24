@@ -68,3 +68,8 @@ $theme-colors: map-merge($theme-colors, $TBColors);
   animation-duration: 1.5s;
   //animation-timing-function: cubic-bezier(1, -5, 1, -5);
 }
+
+#toggle-all.btn-outline-TBPrimary:hover{
+  //color: tint-color($TBPrimary, 50);
+  color: $TBPrimary;
+}
