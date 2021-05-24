@@ -267,16 +267,16 @@ class HardwareInfo:
 
                         interface_dict = OrderedDict({
                             "name":               name,
-                            "address":            address.address,
+                            "state":              state,
                             "family":             family,
-                            "broadcast":          broadcast,
+                            "dhcp enabled":       dhcp_state,
+                            "address":            address.address,
                             "netmask":            netmask,
+                            "gateway":            gateway,
+                            "broadcast":          broadcast,
+                            "dns":                dns,
                             "speed":              speed,
                             "duplex":             duplex,
-                            "state":              state,
-                            "gateway":            gateway,
-                            "dhcp enabled":       dhcp_state,
-                            "dns":                dns,
                             "autoconfig enabled": autoconfig_state
                         })
                         interface_list.append(interface_dict)
@@ -284,7 +284,7 @@ class HardwareInfo:
         else:
             interface_list = [OrderedDict({"name": "OS not identified"})]
 
-        return OrderedDict({"interface_list": interface_list})
+        return OrderedDict({"data_list": interface_list})
 
     def get_gpu(self):
         if self.os == "Windows":
