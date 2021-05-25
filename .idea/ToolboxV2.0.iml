@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/toolbox/static" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/toolbox/static/scss/.sass-cache" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (ToolboxV2.0)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
