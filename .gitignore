@@ -2,3 +2,4 @@
 /toolbox/static/node_modules/
 /toolbox/config.py
 __pycache__/
+/toolbox/static/scss/.sass-cache/
