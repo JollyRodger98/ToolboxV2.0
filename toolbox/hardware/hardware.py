@@ -1,10 +1,9 @@
 import platform
 import re
-import subprocess
 from collections import OrderedDict
 from datetime import datetime
 from socket import AddressFamily
-from ._ipconfig import _get_ipconfig
+from ._ipconfig import Terminal
 
 import psutil
 from dateutil import parser
@@ -57,6 +56,7 @@ class HardwareInfo:
     def __init__(self, suffix="B"):
         self.suffix = suffix
         self.os = self.get_os()
+        self._terminal = Terminal(self.os)
 
     def get_size(self, input_bytes: [int]) -> str:
         """Converts bytes to larger and readable units.
@@ -239,14 +239,14 @@ class HardwareInfo:
             ipconfig_interface: dict = dict()
             for name, status in interface_status.items():
                 if status.isup:
-                    for interface, data in _get_ipconfig().items():
+                    for interface, data in self._terminal.get_ipconfig().items():
                         if name in interface:
                             ipconfig_interface = {interface: data}
                             break
                     address: snicaddr
                     for address in interfaces_addresses[name]:
                         family = _parse_address_family(address.family)
-                        # speed = "1Gbit" if status.speed == 1000 else status.speed
+                        # speed = "1GBit" if status.speed == 1000 else status.speed
                         speed = status.speed
                         broadcast = address.broadcast if address.broadcast else ""
                         duplex = _parse_duplex(status.duplex)
@@ -287,7 +287,20 @@ class HardwareInfo:
                         interface_list.append(interface_dict)
                 ipconfig_interface = dict()
         else:
-            interface_list = [OrderedDict({"name": "OS not identified"})]
+            interface_list = [OrderedDict({
+                "name": "OS not identified",
+                "state": "OS not identified",
+                "family": "OS not identified",
+                "dhcp enabled": "OS not identified",
+                "address": "OS not identified",
+                "netmask": "OS not identified",
+                "gateway": "OS not identified",
+                "broadcast": "OS not identified",
+                "dns": "OS not identified",
+                "speed": "OS not identified",
+                "duplex": "OS not identified",
+                "autoconfig enabled": "OS not identified"
+            })]
 
         return OrderedDict({"data_list": interface_list})
 
