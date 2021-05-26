@@ -1,26 +1,39 @@
 import ipaddress
+import random
+import re
 import subprocess
 from collections import OrderedDict
-from subprocess import CompletedProcess
-import re
 from re import Match
+from subprocess import CompletedProcess
+from ._re import mac_os, windows, _re_netconf_name
 
 
 class Terminal:
-    _re_ifconfig_status = re.compile(r"^\tstatus: (active|inactive)$", re.MULTILINE)
-    _re_ifconfig_type = re.compile(r"^\ttype: ((?:\w*[ -]?)*)$", re.MULTILINE)
-    _re_ifconfig_ether = re.compile(r"^\tether ([a-f0-9]{2}:(?:[a-f0-9]{2}:){4}[a-f0-9]{2}) $", re.MULTILINE)
-    _re_ifconfig_addresses = re.compile(r"^\tinet (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
+    _re_ifconfig_status = re.compile(r"(?m)^\tstatus: (active|inactive)$")
+    _re_ifconfig_type = re.compile(r"(?m)^\ttype: ((?:\w*[ -]?)*)$")
+    _re_ifconfig_ether = re.compile(r"(?m)^\tether ([a-f0-9]{2}:(?:[a-f0-9]{2}:){4}[a-f0-9]{2}) $")
+    _re_ifconfig_addresses = re.compile(r"(?m)^\tinet (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"
                                         r" netmask ([\w|\d]{10})"
                                         r"(?: broadcast )?(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})?"
-                                        r".*$", re.MULTILINE)
-    _re_ifconfig_up_down = re.compile(r"^\t((?:down|up)link) rate: "
-                                      r"(\d{1,3}\.\d{2} Mbps) \[eff\] / (\d{1,3}\.\d{2} Mbps)(?: \[max\])?$",
-                                      re.MULTILINE)
-    _re_ifconfig_rate = re.compile(r"^\tlink rate: (\d{1,3}\.\d{2} Mbps)$", re.MULTILINE)
-    _re_ifconfig_quality = re.compile(r"^\t(link quality: )(\d{1,3} \(\w*\))$", re.MULTILINE)
+                                        r".*$")
+    _re_ifconfig_up_down = re.compile(r"(?m)^\t((?:down|up)link) rate: "
+                                      r"(\d{1,3}\.\d{2} Mbps) \[eff\] / (\d{1,3}\.\d{2} Mbps)(?: \[max\])?$")
+    _re_ifconfig_rate = re.compile(r"(?m)^\tlink rate: (\d{1,3}\.\d{2} Mbps)$")
+    _re_ifconfig_quality = re.compile(r"(?m)^\t(link quality: )(\d{1,3} \(\w*\))$")
+
+    _re_netconf_name = _re_netconf_name
+    _re_ipconfig_name = windows["ipconfig"]["int_name"]
+    network_conf_dict_default = OrderedDict({"address": "", "netmask": "", "broadcast": "", "status": "", "type": "",
+                                             "mac": "", "rate": "", "uplink rate max": "", "uplink rate eff": "",
+                                             "downlink rate max": "", "downlink rate eff": "", "quality": ""})
 
     def __init__(self, os: str):
+        """Parsing output of various CLIs.
+
+        Parsing the output of ipconfig, ifconfig and other commands from MacOS, Linux and Windows
+
+        :param os: local operating system, normally not passed on manually
+        """
         self._os = os
 
     def get_ipconfig(self):
@@ -56,26 +69,71 @@ class Terminal:
 
         return parsed_ipconfig
 
-    def foobar(self):
+    def ipconfig_ps(self):
         ps_cmd = ["powershell", "-command"]
-        parsed_ipconfig: OrderedDict = OrderedDict()
-        net_adapter_cmd: CompletedProcess = subprocess.run(
-            ps_cmd + ["Get-NetAdapter", "|", "FT", "-HideTableHeaders", "Name"],
-            capture_output=True
-        )
-        net_adapters: list = net_adapter_cmd.stdout.decode().strip().splitlines()
-        net_adapters = list(map(lambda x: x.strip(), net_adapters))
-        print(net_adapters)
-        THA_list = list()
-        for adapter in net_adapters:
-            print(subprocess.run(ps_cmd + ["Get-NetIPConfiguration", "-InterfaceAlias", f'"{adapter}"', "-Detailed"], capture_output=True))
+        netconf_interface_list: OrderedDict = OrderedDict()
+        cmd = ps_cmd + ["Get-NetIPConfiguration", "-All", "-Detailed", "-AllCompartments"]
+        net_conf_cmd: CompletedProcess = subprocess.run(cmd, capture_output=True)
+        net_conf_cmd_out = net_conf_cmd.stdout.decode().split("\r\n\r")
+        net_conf_cmd_out = [interface.strip() for interface in net_conf_cmd_out if interface not in ['\n', ""]]
+        for interface_data in net_conf_cmd_out:
+            interface_name = self._netconf_int_name(interface_data)
+            netconf_interface_list.update({interface_name: {}})
+            # print(f"{interface_data}\n")
+            re_tmp = re.compile(r"^InterfaceAlias\s*:\s((?:\w|[ *-])+\d)\r$", re.MULTILINE)
+            re_tmp_result = re.search(re_tmp, interface_data)
+            if re_tmp_result:
+                # print(re_tmp_result.groups())
+                pass
+        return netconf_interface_list
 
-        print(THA_list)
-        # cmd = ["ping", "8.8.8.8", "-n", "1", "-w", "100", "-l", "1"]
-        # ping_cmd: CompletedProcess = subprocess.run(cmd, capture_output=True)
-        return parsed_ipconfig
+    def ipconfig_cmd(self):
+        ipconfig_interface_list: OrderedDict = OrderedDict()
+        ipconfig_cmd: CompletedProcess = subprocess.run(["ipconfig", "/all"], capture_output=True)
+        ipconfig_cmd_out = ipconfig_cmd.stdout.decode().split("\r\n\r\n")
+        ipconfig_cmd_out = [[name.strip(), data] for name, data in zip(ipconfig_cmd_out[::2], ipconfig_cmd_out[1::2])]
+        # print(*ipconfig_cmd_out, sep=f"\n{'='*50}\n")
+        test = {"dict_test": r"(?:Ethernet|Wireless LAN) adapter ((?:\w|[-* ])* \d):"}
+        for int_name, int_data in ipconfig_cmd_out:
+            interface_name = self._ipconfig_int_name(int_name)
+            ipconfig_interface_list.update({interface_name: {}})
+            re_int_name: Match = re.search(test["dict_test"], int_name)
+            if re_int_name:
+                print(re_int_name.group(1))
+                pass
 
-    def ifconfig(self) -> OrderedDict:
+            # print(interface_name)
+        return ipconfig_interface_list
+
+    def _ipconfig_int_name(self, interface_cli_output: str) -> str:
+        re_name: Match = re.search(self._re_ipconfig_name, interface_cli_output)
+        int_name: str
+        if re_name:
+            int_name = re_name.group(1)
+        elif interface_cli_output == "Windows IP Configuration":
+            int_name = interface_cli_output
+        else:
+            int_name = f"Unknown Interface {random.randint(1, 999)}"
+        return int_name
+
+    def _netconf_int_name(self, interface_cli_output: str) -> str:
+        re_name: Match = re.search(self._re_netconf_name, interface_cli_output)
+        int_name: str = str()
+        if re_name:
+            int_name = re_name.group(1)
+        else:
+            int_name = f"Unknown Interface {random.randint(1, 999)}"
+        return int_name
+
+    def network_conf(self) -> OrderedDict:
+        """Get Network specification and configuration based on OS.
+
+        :return: Dictionary with information about local network configuration.
+        """
+        if self._os == "Darwin":
+            return self._macos_net_conf()
+
+    def _macos_net_conf(self) -> OrderedDict:
         ifconfig_interface_list = OrderedDict()
         interface_list_cmd: CompletedProcess = subprocess.run(["ifconfig", "-l"], capture_output=True)
         interface_list_cmd_out: list = interface_list_cmd.stdout.decode().split()
@@ -155,7 +213,7 @@ class Terminal:
 
 
 t = Terminal("Darwin")
-output = t.ifconfig()
+output = t.ipconfig_cmd()
 for i in output.items():
-    # print(i)
+    print(i)
     pass
