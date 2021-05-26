@@ -3,7 +3,7 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 from socket import AddressFamily
-from ._ipconfig import Terminal
+from .ipconfig import Terminal
 
 import psutil
 from dateutil import parser
