@@ -5,7 +5,7 @@ import subprocess
 from collections import OrderedDict
 from re import Match
 from subprocess import CompletedProcess
-from ._re import mac_os, windows, _re_netconf_name
+from ._re_patterns import mac_os, windows, _re_netconf_name
 
 
 class Terminal:
