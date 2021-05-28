@@ -18,6 +18,10 @@ mac_os: Dict = {
 
 windows = {
     "ipconfig": {
-        "int_name": re.compile(r"^(?:Ethernet|Wireless LAN) adapter ((?:\w|[-* ])* \d):$")
+        "int_name": re.compile(r"^(?:Ethernet|Wireless LAN) adapter ((?:\w|[-* ])* \d):$"),
+        "int_mac": re.compile(r"(?m)^\s{3}Physical Address(?:\. )*: ((?:[A-F0-9]{2}-){5}[A-F0-9]{2})\r$"),
+        "int_status": re.compile(r"(?m)^\s{3}Media State (?:\. )*: ([\w ]*)\r$"),
+        "int_ipv4": re.compile(r"(?m)^\s{3}IPv4 Address(?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})(?:\(Preferred\) )?\r$"),
+        "int_netmask": re.compile(r"(?m)^\s{3}Subnet Mask (?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})\r$")
     }
 }
