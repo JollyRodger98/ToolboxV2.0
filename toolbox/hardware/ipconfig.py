@@ -63,6 +63,8 @@ class _MacOSParser:
             type_dict["type"] = int_type
         elif interface_cli_output.startswith("utun"):
             type_dict["type"] = "Virtual P2P Interface (Back to My Mac)"
+        elif interface_cli_output.startswith("lo0"):
+            type_dict["type"] = "Loopback"
         return type_dict
 
     def ifconfig_int_status(self, interface_cli_output: str) -> Dict:
