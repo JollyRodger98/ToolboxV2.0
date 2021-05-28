@@ -305,7 +305,6 @@ class HardwareInfo:
         elif self.os == "Darwin":
             interface_stats: dict = psutil.net_if_stats()
             interface_data_cli: OrderedDict = self._terminal.network_config()
-            # print(*interface_data_cli.items(), sep="\n")
             for index, (interface, interface_data) in enumerate(psutil.net_if_addrs().items()):
                 interface_list.append(network_dict_template.copy())
                 stats: snicstats = interface_stats[interface]
