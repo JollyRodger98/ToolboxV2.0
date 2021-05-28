@@ -300,6 +300,7 @@ class HardwareInfo:
                             "duplex":             duplex,
                             "autoconfig enabled": autoconfig_state
                         })
+                        interface_dict.update(network_dict_template.copy())
                         interface_list.append(interface_dict)
                 ipconfig_interface = dict()
         elif self.os == "Darwin":
