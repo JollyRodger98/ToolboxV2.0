@@ -120,10 +120,14 @@ class _MacOSParser:
 
 
 class _WindowsParser:
-    re_ipconfig_name = windows["ipconfig"]["int_name"]
+    _re_ipconfig_name = windows["ipconfig"]["int_name"]
+    _re_ipconfig_mac = windows["ipconfig"]["int_mac"]
+    _re_ipconfig_status = windows["ipconfig"]["int_status"]
+    _re_ipconfig_ipv4 = windows["ipconfig"]["int_ipv4"]
+    _re_ipconfig_netmask = windows["ipconfig"]["int_netmask"]
 
     def ipconfig_int_name(self, interface_cli_output: str) -> str:
-        re_name: Match = re.search(self.re_ipconfig_name, interface_cli_output)
+        re_name: Match = re.search(self._re_ipconfig_name, interface_cli_output)
         int_name: str
         if re_name:
             int_name = re_name.group(1)
@@ -133,9 +137,43 @@ class _WindowsParser:
             int_name = f"Unknown Interface {random.randint(1, 999)}"
         return int_name
 
+    def ipconfig_int_mac(self, interface_cli_output: str) -> Dict:
+        re_mac: Match = re.search(self._re_ipconfig_mac, interface_cli_output)
+        mac_dict: Dict = {"mac": ""}
+        if re_mac:
+            int_mac = re_mac.group(1)
+            mac_dict["mac"] = int_mac
+        return mac_dict
 
-class Terminal(_MacOSParser, _WindowsParser):
-    network_conf_dict_default = OrderedDict({
+    def ipconfig_int_status(self, interface_cli_output: str) -> Dict:
+        re_status = re.search(self._re_ipconfig_status, interface_cli_output)
+        status_dict = {"status": ""}
+        if re_status:
+            int_status = re_status.group(1)
+            status_dict["status"] = int_status
+        else:
+            status_dict["status"] = "Media connected"
+        return status_dict
+
+    def ipconfig_int_ipv4(self, interface_cli_output: str) -> Dict:
+        re_ipv4: Match = re.search(self._re_ipconfig_ipv4, interface_cli_output)
+        ipv4_dict: Dict = {"ipv4": ""}
+        if re_ipv4:
+            int_ipv4 = re_ipv4.group(1)
+            ipv4_dict["ipv4"] = int_ipv4
+        return ipv4_dict
+
+    def ipconfig_int_netmask(self, interface_cli_output: str) -> Dict:
+        re_netmask: Match = re.search(self._re_ipconfig_netmask, interface_cli_output)
+        netmask_dict: Dict = {"netmask": ""}
+        if re_netmask:
+            int_netmask = re_netmask.group(1)
+            netmask_dict["netmask"] = int_netmask
+        return netmask_dict
+
+
+class Terminal:
+    _network_conf_dict_default = OrderedDict({
         "type": "",
         "status": "",
         "mac": "",
@@ -154,6 +192,8 @@ class Terminal(_MacOSParser, _WindowsParser):
         "downlink rate eff": "",
         "quality": "",
     })
+    _win_parse = _WindowsParser()
+    _osx_parse = _MacOSParser()
 
     def __init__(self, os: str):
         """Parsing output of various CLIs.
@@ -241,13 +281,18 @@ class Terminal(_MacOSParser, _WindowsParser):
         ipconfig_cmd_out = ipconfig_cmd.stdout.decode().split("\r\n\r\n")
         ipconfig_cmd_out = [[name.strip(), data] for name, data in zip(ipconfig_cmd_out[::2], ipconfig_cmd_out[1::2])]
         # print(*ipconfig_cmd_out, sep=f"\n{'='*50}\n")
-        test = {"dict_test": r"(?:Ethernet|Wireless LAN) adapter ((?:\w|[-* ])* \d):"}
         for int_name, int_data in ipconfig_cmd_out:
-            interface_name = self.ipconfig_int_name(int_name)
-            ipconfig_interface_list.update({interface_name: {}})
-            re_int_name: Match = re.search(test["dict_test"], int_name)
+            interface_name = self._win_parse.ipconfig_int_name(int_name)
+            ipconfig_interface_list.update({interface_name: self._network_conf_dict_default.copy()})
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_mac(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_status(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_ipv4(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_netmask(int_data))
+            # print(f"=== {interface_name} ===\n{int_data}\n")
+            re_tmp = re.compile(r"(?m)^\s{3}Subnet Mask (?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})\r$")
+            re_int_name: Match = re.search(re_tmp, int_data)
             if re_int_name:
-                print(re_int_name.group(1))
+                print(f"{interface_name:30}: {re_int_name.groups()}")
                 pass
 
             # print(interface_name)
@@ -260,16 +305,24 @@ class Terminal(_MacOSParser, _WindowsParser):
         routing_table_cmd_out: str = routing_table_cmd.stdout.decode()
         interface_list_cmd_out: list = interface_list_cmd.stdout.decode().split()
         for interface in interface_list_cmd_out:
-            ifconfig_interface_list.update({interface: self.network_conf_dict_default.copy()})
+            ifconfig_interface_list.update({interface: self._network_conf_dict_default.copy()})
             interface_cmd: CompletedProcess = subprocess.run(["ifconfig", "-v", interface], capture_output=True)
             interface_cmd_out: str = interface_cmd.stdout.decode()
-            ifconfig_interface_list[interface].update(self.ifconfig_int_type(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_status(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_ether(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_quality(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_up_down_rate(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_addr(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_gateway(routing_table_cmd_out, interface))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_media(interface_cmd_out))
-            ifconfig_interface_list[interface].update(self.ifconfig_int_ipv6(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_type(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_status(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_ether(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_quality(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_up_down_rate(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_addr(interface_cmd_out))
+            ifconfig_interface_list[interface].update(
+                self._osx_parse.ifconfig_int_gateway(routing_table_cmd_out, interface))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_media(interface_cmd_out))
+            ifconfig_interface_list[interface].update(self._osx_parse.ifconfig_int_ipv6(interface_cmd_out))
         return ifconfig_interface_list
+
+
+t = Terminal("Windows")
+output = t.network_config()
+for o_key, o_value in output.items():
+    # print(f"{o_key:30}: {o_value}")
+    pass
