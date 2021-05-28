@@ -84,6 +84,17 @@ def _interface_ip_state(dhcp_setting):
         return "Static"
 
 
+def _interface_speed(speed: str) -> str:
+    if speed == 1000:
+        return "1 Gbps"
+    elif speed == 100:
+        return "100 Mbps"
+    elif speed == 10:
+        return "10 Mbps"
+    elif speed == "":
+        return "unknown"
+
+
 class HardwareWidget(HardwareInfo):
 
     def __init__(self):
@@ -162,39 +173,31 @@ class HardwareWidget(HardwareInfo):
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.network.display_widget)]
         network_data_list = self.get_network()["data_list"]
-        for interface in network_data_list:
-            if interface["family"] == "MAC":
-                row_content = self._table_row_head % {"head_class": "", "head_content": "MAC"} + \
-                              self._table_data % {"cell_class": "", "cell_content": interface["address"]}
-                table_data.append(
-                    self._generate_table_row("name", user_profile.widgets.network.display_fields, row_content,
-                                             override_display=True))
-            elif interface["family"] == "IPv4" and interface["address"] != "127.0.0.1":
-                for name, data in interface.items():
-                    cell_class = ""
-                    display_name = ""
-                    name = name.title()
-                    if name.lower() == "dhcp enabled":
-                        display_name = "IP state"
-                        data = _interface_ip_state(data)
-                    elif name.lower() == "dns":
-                        display_name = "DNS"
-                    elif name.lower() == "state":
-                        data = _interface_state(data)
-                    elif name.lower() == "speed":
-                        display_name = "Duplex/Speed"
-                        data = f"{interface['duplex']}/{data}"
-                    elif name.lower() == "address":
-                        ip_interface: IPv4Interface = ipaddress.ip_interface(f"{data}/{interface['netmask']}")
-                        if ip_interface.with_prefixlen.endswith("24"):
-                            data = f"{ip_interface.with_prefixlen}"
-                        else:
-                            data = f"{ip_interface.with_prefixlen} ({ip_interface.netmask})"
+        for interface_data in network_data_list:
+            if interface_data["ipv4"] != "127.0.0.1" and interface_data["ipv4"]:
+                for key, value in interface_data.items():
+                    display_name = key.title()
+                    display_value = None
+                    if "dns" in key.lower():
+                        display_name = key.lower().replace("dns", "DNS")
+                    elif "dhcp" in key.lower():
+                        display_name = key.lower().replace("dhcp", "DHCP")
+                    elif "mac" in key.lower():
+                        display_name = key.lower().replace("mac", "MAC")
+                    elif "state" in key.lower():
+                        display_value = _interface_state(value)
+                    elif "speed" in key.lower():
+                        display_value = _interface_speed(value)
+                    elif key.lower().startswith("ip"):
+                        display_name = key.lower().replace("ip", "IP")
+                        if "ipv4" in key.lower():
+                            ip: IPv4Interface = ipaddress.ip_interface(f"{value}/{interface_data['netmask']}")
+                            display_value = ip.with_prefixlen
 
-                    row_content = self._table_row_head % {"head_class": "", "head_content": display_name or name} + \
-                        self._table_data % {"cell_class": cell_class, "cell_content": data}
-                    table_data.append(
-                        self._generate_table_row(name, user_profile.widgets.network.display_fields, row_content))
+                    row_content = self._table_row_head % {"head_class": "", "head_content": display_name} + \
+                        self._table_data % {"cell_class": "", "cell_content": display_value or value}
+                    table_data.append(self._generate_table_row(
+                        key, user_profile.widgets.network.display_fields, row_content))
 
         return self._generate_std_widget(WIDGET.title(), table_data, card_classes)
 
