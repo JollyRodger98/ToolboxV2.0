@@ -337,9 +337,6 @@ class HardwareInfo:
                 "duplex": "OS not identified",
                 "autoconfig enabled": "OS not identified"
             })]
-        for item in interface_list:
-            print(f"{item['name']:10} {item}")
-            pass
 
         return OrderedDict({"data_list": interface_list})
 
