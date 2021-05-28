@@ -23,8 +23,6 @@ def _parse_duplex(raw_data: NicDuplex) -> str:
         return "Full"
     elif raw_data.name == "NIC_DUPLEX_HALF":
         return "Half"
-    elif raw_data.name == "NIC_DUPLEX_UNKNOWN":
-        return "Unknown"
 
 
 def _parse_address_family(raw_data: AddressFamily):
@@ -231,6 +229,24 @@ class HardwareInfo:
         return return_dict
 
     def get_network(self):
+        network_dict_template = OrderedDict({
+            "name": "",
+            "state": "",
+            "family": "",
+            "dhcp enabled": "",
+            "mac address": "",
+            "ipv4": "",
+            "ipv6": "",
+            "netmask": "",
+            "gateway": "",
+            "broadcast": "",
+            "dns": "",
+            "speed": "",
+            "duplex": "",
+            "autoconfig enabled": "",
+            "type": ""
+        })
+        interface_list: list = list()
         if self.os == "Windows":
             interface_list: list[OrderedDict] = []
             interface_status: dict = psutil.net_if_stats()
@@ -286,6 +302,26 @@ class HardwareInfo:
                         })
                         interface_list.append(interface_dict)
                 ipconfig_interface = dict()
+        elif self.os == "Darwin":
+            interface_stats: dict = psutil.net_if_stats()
+            interface_data_cli: OrderedDict = self._terminal.network_config()
+            # print(*interface_data_cli.items(), sep="\n")
+            for index, (interface, interface_data) in enumerate(psutil.net_if_addrs().items()):
+                interface_list.append(network_dict_template.copy())
+                stats: snicstats = interface_stats[interface]
+                cli_data: OrderedDict = interface_data_cli[interface]
+                interface_list[index].update({"name": interface, "state": stats.isup, "speed": stats.speed or "",
+                                              "duplex": _parse_duplex(stats.duplex), "type": cli_data["type"],
+                                              "gateway": cli_data["gateway"]})
+                int_address: snicaddr
+                for int_address in interface_data:
+                    if int_address.family == 2:
+                        interface_list[index].update({"ipv4": int_address.address, "netmask": int_address.netmask,
+                                                      "broadcast": int_address.broadcast})
+                    elif int_address.family == 18:
+                        interface_list[index].update({"mac address": int_address.address})
+                    elif int_address.family == 30:
+                        interface_list[index].update({"ipv6": int_address.address.split("%")[0]})
         else:
             interface_list = [OrderedDict({
                 "name": "OS not identified",
@@ -301,6 +337,9 @@ class HardwareInfo:
                 "duplex": "OS not identified",
                 "autoconfig enabled": "OS not identified"
             })]
+        for item in interface_list:
+            print(f"{item['name']:10} {item}")
+            pass
 
         return OrderedDict({"data_list": interface_list})
 
