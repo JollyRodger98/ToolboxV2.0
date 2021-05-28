@@ -271,12 +271,3 @@ class Terminal(_MacOSParser, _WindowsParser):
             ifconfig_interface_list[interface].update(self.ifconfig_int_media(interface_cmd_out))
             ifconfig_interface_list[interface].update(self.ifconfig_int_ipv6(interface_cmd_out))
         return ifconfig_interface_list
-
-
-t = Terminal("Darwin")
-output = t.network_config()
-for key, value in output.items():
-    # print(value)
-    print(f'{key:10}: {value.items()}')
-    pass
-# print(*output["en4"].items(), sep="\n")
