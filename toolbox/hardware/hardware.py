@@ -300,6 +300,8 @@ class HardwareInfo:
                             "duplex":             duplex,
                             "autoconfig enabled": autoconfig_state
                         })
+                        # TODO: Remove workaround, network dict gets currently overridden to ensure all keys are present
+                        #  for use in widget generating function.
                         interface_dict.update(network_dict_template.copy())
                         interface_list.append(interface_dict)
                 ipconfig_interface = dict()
