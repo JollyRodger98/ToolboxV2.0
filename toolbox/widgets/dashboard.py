@@ -115,6 +115,7 @@ class HardwareWidget(HardwareInfo):
         self._std_table_header: Final[Markup] = \
             self._table_row % {"row_class": "",
                                "row_content": (self._table_col_head % {"head_class": "", "head_content": ""} * 2)}
+        self.widget_visibility = {"system": "", "memory": "", "cpu": "", "partitions": "", "gpu": ""}
 
     def get_widget(self, widget_name: str, profile: str = "Default") -> Markup:
         """Get widget HTML Markup string with name and profile.
@@ -152,6 +153,8 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "gpu"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.gpu.display_widget)]
+        self.widget_visibility.update({"gpu": user_profile.widgets.gpu.display_widget})
+        print(user_profile.widgets.gpu.display_widget)
 
         for name, data in self.get_gpu().items():
             if name.lower() == "memory used percent":
@@ -172,7 +175,9 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "network"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.network.display_widget)]
+        self.widget_visibility.update({"network": user_profile.widgets.network.display_widget})
         network_data_list = self.get_network()["data_list"]
+
         for interface_data in network_data_list:
             if interface_data["ipv4"] != "127.0.0.1" and interface_data["ipv4"]:
                 for key, value in interface_data.items():
@@ -207,6 +212,7 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "partitions"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.partitions.display_widget)]
+        self.widget_visibility.update({"partitions": user_profile.widgets.partitions.display_widget})
         partition_data_list = self.get_partitions()["data_list"]
 
         for partition in partition_data_list:
@@ -245,6 +251,7 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "memory"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.memory.display_widget)]
+        self.widget_visibility.update({"memory": user_profile.widgets.memory.display_widget})
 
         for name, data in self.get_memory().items():
             if name.lower() == "percent":
@@ -264,6 +271,7 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "system"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.system.display_widget)]
+        self.widget_visibility.update({"system": user_profile.widgets.system.display_widget})
 
         for name, data in self.get_system().items():
             row_content = self._table_row_head % {"head_class": "", "head_content": name.title()} + \
@@ -279,6 +287,7 @@ class HardwareWidget(HardwareInfo):
         WIDGET = "cpu"
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.cpu.display_widget)]
+        self.widget_visibility.update({"cpu": user_profile.widgets.cpu.display_widget})
 
         for name, data in self.get_cpu().items():
             field_name = name.title().replace("Cpu", "CPU") if "cpu" in name.lower() else name.title()

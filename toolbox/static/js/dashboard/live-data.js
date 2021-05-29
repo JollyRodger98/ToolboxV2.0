@@ -1,5 +1,6 @@
 if(sessionStorage.getItem("interval_seconds") == null) {sessionStorage.setItem("interval_seconds", "10")}
 $(function () {
+
     let interval_id = {"cpu-percent": "", "memory-percent": "", "cpu-by-core-percent": "", "gpu-memory-percent": "", "gpu-temperature": ""}
     let toggle_states = {"cpu-percent": false, "memory-percent": false, "cpu-by-core-percent": false, "gpu-memory-percent": false, "gpu-temperature": false}
     let interval_seconds = sessionStorage.getItem("interval_seconds")
@@ -103,6 +104,7 @@ function SetPercentageBar(percent_value, field_name, bar_id){
  * @return {undefined}
  */
 function RefreshCPUTotal(interval = 1) {
+    if (!widget_visibility["cpu"]) return
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"interval": interval, "prop": "cpu-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["cpu-percent"])
@@ -115,6 +117,7 @@ function RefreshCPUTotal(interval = 1) {
  * @return {undefined}
  */
 function RefreshMemoryTotal() {
+    if (!widget_visibility["memory"]) return
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "memory-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["memory-percent"])
@@ -127,6 +130,7 @@ function RefreshMemoryTotal() {
  * @return {undefined}
  */
 function RefreshGPUMemory() {
+    if (!widget_visibility["gpu"]) return
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "gpu-memory-percent"}})
     call.done(function (data, success) {
         let percentage = Number(data["gpu-memory-percent"])
@@ -139,6 +143,7 @@ function RefreshGPUMemory() {
  * @return {undefined}
  */
 function RefreshGPUTemperature() {
+    if (!widget_visibility["gpu"]) return
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"prop": "gpu-temperature"}})
     call.done(function (data, success) {
         let temperature = data["gpu-temperature"]
@@ -153,6 +158,7 @@ function RefreshGPUTemperature() {
  * @return {undefined}
  */
 function RefreshCPUByCore(interval = 1){
+    if (!widget_visibility["cpu"]) return
     let call =  $.get({url: "/api/hardware", dataType: "json", data: {"interval": interval, "prop": "cpu-by-core-percent"}})
     call.done(function (data, status) {
         $('th:contains("CPU Usage By Core")').next().html(

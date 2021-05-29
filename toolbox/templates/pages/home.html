@@ -109,6 +109,7 @@
     </div>
     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-2 row-cols-xxl-3 g-2">
 
+
         {{ hardware.get_widget("system", std_profile) }}
         {{ hardware.get_widget("memory", std_profile) }}
         {{ hardware.get_widget("partitions", std_profile) }}
@@ -123,4 +124,9 @@
 {% block custom_script %}
     <script src="{{ url_for("static", filename="js/dashboard/time.js") }}"></script>
     <script src="{{ url_for("static", filename="js/dashboard/live-data.js") }}"></script>
+    <script type="text/javascript">
+        let widget_visibility = {{ hardware.widget_visibility | tojson }};
+        sessionStorage.setItem("widget_visibility", JSON.stringify({{ hardware.widget_visibility | tojson }}));
+        // console.log(sessionStorage.getItem("widget_visibility"));
+    </script>
 {% endblock %}>
