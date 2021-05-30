@@ -36,7 +36,7 @@ def _parse_address_family(raw_data: AddressFamily):
         return raw_data.name
 
 
-class HardwareInfo:
+class HardwareInfo(Terminal):
     """Class to query local hardware
 
     Collect and return dict with various local hardware specs.
@@ -54,7 +54,7 @@ class HardwareInfo:
     def __init__(self, suffix="B"):
         self.suffix = suffix
         self.os = self.get_os()
-        self._terminal = Terminal(self.os)
+        super().__init__(self.os)
 
     def get_size(self, input_bytes: [int]) -> str:
         """Converts bytes to larger and readable units.
@@ -255,7 +255,7 @@ class HardwareInfo:
             ipconfig_interface: dict = dict()
             for name, status in interface_status.items():
                 if status.isup:
-                    for interface, data in self._terminal.get_ipconfig().items():
+                    for interface, data in self.get_ipconfig().items():
                         if name in interface:
                             ipconfig_interface = {interface: data}
                             break
@@ -307,7 +307,7 @@ class HardwareInfo:
                 ipconfig_interface = dict()
         elif self.os == "Darwin":
             interface_stats: dict = psutil.net_if_stats()
-            interface_data_cli: OrderedDict = self._terminal.network_config()
+            interface_data_cli: OrderedDict = self.network_config()
             for index, (interface, interface_data) in enumerate(psutil.net_if_addrs().items()):
                 interface_list.append(network_dict_template.copy())
                 stats: snicstats = interface_stats[interface]
