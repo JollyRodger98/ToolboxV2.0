@@ -154,7 +154,6 @@ class HardwareWidget(HardwareInfo):
         user_profile = _get_profile(profile, WIDGET)
         card_classes = [_widget_visible(user_profile.widgets.gpu.display_widget)]
         self.widget_visibility.update({"gpu": user_profile.widgets.gpu.display_widget})
-        print(user_profile.widgets.gpu.display_widget)
 
         for name, data in self.get_gpu().items():
             if name.lower() == "memory used percent":
