@@ -2,6 +2,8 @@ from collections import OrderedDict
 from typing import Union, Final
 
 from jinja2 import Markup
+from mac_vendor_lookup import MacLookup
+from mac_vendor_lookup import InvalidMacError
 
 from toolbox.hardware import HardwareInfo
 from toolbox.models import DashboardProfiles, widget_list
@@ -179,8 +181,13 @@ class HardwareWidget(HardwareInfo):
 
         for interface_data in network_data_list:
             ip: IPv4Interface = ipaddress.ip_interface(f"{interface_data['ipv4']}/{interface_data['netmask']}")
+            try:
+                vendor = MacLookup().lookup(interface_data["mac address"])
+            except (KeyError, InvalidMacError):
+                vendor = None
+
             if interface_data["ipv4"] != "127.0.0.1" and interface_data["ipv4"] \
-                    and not ip.is_link_local:
+                    and not ip.is_link_local and vendor:
                 for key, value in interface_data.items():
                     display_name = key.title()
                     display_value = None
