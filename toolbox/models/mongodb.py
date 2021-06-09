@@ -1,4 +1,5 @@
 from mongoengine import Document, StringField, EmbeddedDocument, EmbeddedDocumentField, BooleanField, ListField
+import toolbox.config as config
 
 
 class WidgetData(EmbeddedDocument):
@@ -17,7 +18,7 @@ class Widgets(EmbeddedDocument):
 
 
 class DashboardProfiles(Document):
-    meta = {'collection': 'Dashboard_Profiles'}
+    meta = {'collection': config.DASHB_DB_COL}
     profile_name: StringField = StringField(required=True)
     widgets: Widgets = EmbeddedDocumentField(Widgets)
 
