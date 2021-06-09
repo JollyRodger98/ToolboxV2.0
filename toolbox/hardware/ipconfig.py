@@ -125,6 +125,11 @@ class _WindowsParser:
     _re_ipconfig_status = windows["ipconfig"]["int_status"]
     _re_ipconfig_ipv4 = windows["ipconfig"]["int_ipv4"]
     _re_ipconfig_netmask = windows["ipconfig"]["int_netmask"]
+    _re_ipconfig_dhcp_en = windows["ipconfig"]["int_dhcp_en"]
+    _re_ipconfig_description = windows["ipconfig"]["int_description"]
+    _re_ipconfig_gateway = windows["ipconfig"]["int_gateway"]
+    _re_ipconfig_dns = windows["ipconfig"]["int_dns"]
+    _re_ipconfig_ipv6 = windows["ipconfig"]["int_ipv6"]
 
     def ipconfig_int_name(self, interface_cli_output: str) -> str:
         re_name: Match = re.search(self._re_ipconfig_name, interface_cli_output)
@@ -171,6 +176,46 @@ class _WindowsParser:
             netmask_dict["netmask"] = int_netmask
         return netmask_dict
 
+    def ipconfig_int_dhcp_en(self, interface_cli_output: str) -> Dict:
+        re_dhcp_en: Match = re.search(self._re_ipconfig_dhcp_en, interface_cli_output)
+        dhcp_en_dict: Dict = {"dhcp enabled": ""}
+        if re_dhcp_en:
+            int_dhcp_en = re_dhcp_en.group(1)
+            dhcp_en_dict["dhcp enabled"] = int_dhcp_en
+        return dhcp_en_dict
+
+    def ipconfig_int_description(self, interface_cli_output: str) -> Dict:
+        re_description: Match = re.search(self._re_ipconfig_description, interface_cli_output)
+        description_dict: Dict = {"type": ""}
+        if re_description:
+            int_description = re_description.group(1)
+            description_dict["type"] = int_description
+        return description_dict
+
+    def ipconfig_int_gateway(self, interface_cli_output: str) -> Dict:
+        re_gateway: Match = re.search(self._re_ipconfig_gateway, interface_cli_output)
+        gateway_dict: Dict = {"gateway": ""}
+        if re_gateway:
+            int_gateway = re_gateway.group(1)
+            gateway_dict["gateway"] = int_gateway
+        return gateway_dict
+
+    def ipconfig_int_dns(self, interface_cli_output: str) -> Dict:
+        re_dns: Match = re.search(self._re_ipconfig_dns, interface_cli_output)
+        dns_dict: Dict = {"dns": ""}
+        if re_dns:
+            int_dns = re_dns.group(1)
+            dns_dict["dns"] = int_dns
+        return dns_dict
+
+    def ipconfig_int_ipv6(self, interface_cli_output: str) -> Dict:
+        re_ipv6: Match = re.search(self._re_ipconfig_ipv6, interface_cli_output)
+        ipv6_dict: Dict = {"ipv6": ""}
+        if re_ipv6:
+            int_ipv6 = re_ipv6.group(1)
+            ipv6_dict["ipv6"] = int_ipv6
+        return ipv6_dict
+
 
 class Terminal:
     _network_conf_dict_default = OrderedDict({
@@ -191,6 +236,8 @@ class Terminal:
         "downlink rate max": "",
         "downlink rate eff": "",
         "quality": "",
+        "dhcp enabled": "",
+        "dns": "",
     })
     _win_parse = _WindowsParser()
     _osx_parse = _MacOSParser()
@@ -235,35 +282,7 @@ class Terminal:
         parsed_ipconfig = OrderedDict(tmp)
         for int_name, int_data in parsed_ipconfig.items():
             parsed_ipconfig[int_name] = OrderedDict(sorted(int_data.items()))
-
         return parsed_ipconfig
-
-    # TODO Delete
-    def ipconfig_ps(self):
-        def _netconf_int_name(interface_cli_output: str) -> str:
-            re_name: Match = re.search(_re_netconf_name, interface_cli_output)
-            int_name: str
-            if re_name:
-                int_name = re_name.group(1)
-            else:
-                int_name = f"Unknown Interface {random.randint(1, 999)}"
-            return int_name
-        ps_cmd = ["powershell", "-command"]
-        netconf_interface_list: OrderedDict = OrderedDict()
-        cmd = ps_cmd + ["Get-NetIPConfiguration", "-All", "-Detailed", "-AllCompartments"]
-        net_conf_cmd: CompletedProcess = subprocess.run(cmd, capture_output=True)
-        net_conf_cmd_out = net_conf_cmd.stdout.decode().split("\r\n\r")
-        net_conf_cmd_out = [interface.strip() for interface in net_conf_cmd_out if interface not in ['\n', ""]]
-        for interface_data in net_conf_cmd_out:
-            interface_name = _netconf_int_name(interface_data)
-            netconf_interface_list.update({interface_name: {}})
-            # print(f"{interface_data}\n")
-            re_tmp = re.compile(r"^InterfaceAlias\s*:\s((?:\w|[ *-])+\d)\r$", re.MULTILINE)
-            re_tmp_result = re.search(re_tmp, interface_data)
-            if re_tmp_result:
-                # print(re_tmp_result.groups())
-                pass
-        return netconf_interface_list
 
     def network_config(self) -> OrderedDict:
         """Get Network specification and configuration based on OS.
@@ -288,11 +307,16 @@ class Terminal:
             ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_status(int_data))
             ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_ipv4(int_data))
             ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_netmask(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_dhcp_en(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_description(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_gateway(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_dns(int_data))
+            ipconfig_interface_list[interface_name].update(self._win_parse.ipconfig_int_ipv6(int_data))
             # print(f"=== {interface_name} ===\n{int_data}\n")
-            re_tmp = re.compile(r"(?m)^\s{3}Subnet Mask (?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})\r$")
+            re_tmp = re.compile(r"(?m)^\s{3}Link-local IPv6 Address (?:\. )*: (.*)\r$")
             re_int_name: Match = re.search(re_tmp, int_data)
             if re_int_name:
-                print(f"{interface_name:30}: {re_int_name.groups()}")
+                # print(f"{interface_name:30}: {re_int_name.groups()}")
                 pass
 
             # print(interface_name)

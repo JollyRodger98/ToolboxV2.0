@@ -178,7 +178,9 @@ class HardwareWidget(HardwareInfo):
         network_data_list = self.get_network()["data_list"]
 
         for interface_data in network_data_list:
-            if interface_data["ipv4"] != "127.0.0.1" and interface_data["ipv4"]:
+            ip: IPv4Interface = ipaddress.ip_interface(f"{interface_data['ipv4']}/{interface_data['netmask']}")
+            if interface_data["ipv4"] != "127.0.0.1" and interface_data["ipv4"] \
+                    and not ip.is_link_local:
                 for key, value in interface_data.items():
                     display_name = key.title()
                     display_value = None
@@ -187,7 +189,7 @@ class HardwareWidget(HardwareInfo):
                     elif "dhcp" in key.lower():
                         display_name = key.lower().replace("dhcp", "DHCP")
                     elif "mac" in key.lower():
-                        display_name = key.lower().replace("mac", "MAC")
+                        display_name = key.title().replace("Mac", "MAC")
                     elif "state" in key.lower():
                         display_value = _interface_state(value)
                     elif "speed" in key.lower():
@@ -195,7 +197,6 @@ class HardwareWidget(HardwareInfo):
                     elif key.lower().startswith("ip"):
                         display_name = key.lower().replace("ip", "IP")
                         if "ipv4" in key.lower():
-                            ip: IPv4Interface = ipaddress.ip_interface(f"{value}/{interface_data['netmask']}")
                             display_value = ip.with_prefixlen
 
                     row_content = self._table_row_head % {"head_class": "", "head_content": display_name} + \

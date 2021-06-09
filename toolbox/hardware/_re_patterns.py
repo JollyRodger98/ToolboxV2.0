@@ -22,6 +22,11 @@ windows = {
         "int_mac": re.compile(r"(?m)^\s{3}Physical Address(?:\. )*: ((?:[A-F0-9]{2}-){5}[A-F0-9]{2})\r$"),
         "int_status": re.compile(r"(?m)^\s{3}Media State (?:\. )*: ([\w ]*)\r$"),
         "int_ipv4": re.compile(r"(?m)^\s{3}IPv4 Address(?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})(?:\(Preferred\) )?\r$"),
-        "int_netmask": re.compile(r"(?m)^\s{3}Subnet Mask (?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})\r$")
+        "int_netmask": re.compile(r"(?m)^\s{3}Subnet Mask (?:\. )*: (\d{1,3}(?:\.\d{1,3}){3})\r$"),
+        "int_dhcp_en": re.compile(r"(?m)^\s{3}DHCP Enabled(?:\. )*: (Yes|No)\r$"),
+        "int_description": re.compile(r"(?m)^\s{3}Description (?:\. )*: ([\w\d.() #-]*)\r$"),
+        "int_gateway": re.compile(r"(?m)^\s{3}Default Gateway (?:\. )*: ((?:\d{1,3}\.){3}\d{1,3})\r$"),
+        "int_dns": re.compile(r"(?m)^\s{3}DNS Servers (?:\. )*: ((?:\d{1,3}\.){3}\d{1,3})\r$"),
+        "int_ipv6": re.compile(r"(?m)^\s{3}Link-local IPv6 Address (?:\. )*: ([a-f0-9:]*)%\d{1,2}(?:\(Preferred\))? \r$"),
     }
 }

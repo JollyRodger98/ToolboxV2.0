@@ -248,63 +248,86 @@ class HardwareInfo(Terminal):
         })
         interface_list: list = list()
         if self.os == "Windows":
-            interface_list: list[OrderedDict] = []
-            interface_status: dict = psutil.net_if_stats()
-            interfaces_addresses: dict = psutil.net_if_addrs()
-            status: snicstats
-            ipconfig_interface: dict = dict()
-            for name, status in interface_status.items():
-                if status.isup:
-                    for interface, data in self.get_ipconfig().items():
-                        if name in interface:
-                            ipconfig_interface = {interface: data}
-                            break
-                    address: snicaddr
-                    for address in interfaces_addresses[name]:
-                        family = _parse_address_family(address.family)
-                        # speed = "1GBit" if status.speed == 1000 else status.speed
-                        speed = status.speed
-                        broadcast = address.broadcast if address.broadcast else ""
-                        duplex = _parse_duplex(status.duplex)
-                        state = status.isup
-                        if ipconfig_interface != {} and family == "IPv4":
-                            ipconf_int_name = list(ipconfig_interface.keys())[0]
-                            netmask = ipconfig_interface[ipconf_int_name]["Subnet Mask"]
-                            gateway = ipconfig_interface[ipconf_int_name]["Default Gateway"]
-                            dhcp_state = ipconfig_interface[ipconf_int_name]["DHCP Enabled"]
-                            dhcp_state = False if dhcp_state == "No" else dhcp_state
-                            dhcp_state = True if dhcp_state == "Yes" else dhcp_state
-                            dns = ipconfig_interface[ipconf_int_name]["DNS Servers"]
-                            autoconfig_state = \
-                                ipconfig_interface[ipconf_int_name]["Autoconfiguration Enabled"]
-                            autoconfig_state = False if autoconfig_state == "No" else autoconfig_state
-                            autoconfig_state = True if autoconfig_state == "Yes" else autoconfig_state
-                        else:
-                            netmask = address.netmask if address.netmask else ""
-                            gateway = ""
-                            dhcp_state = ""
-                            dns = ""
-                            autoconfig_state = ""
-
-                        interface_dict = OrderedDict({
-                            "name":               name,
-                            "state":              state,
-                            "family":             family,
-                            "dhcp enabled":       dhcp_state,
-                            "address":            address.address,
-                            "netmask":            netmask,
-                            "gateway":            gateway,
-                            "broadcast":          broadcast,
-                            "dns":                dns,
-                            "speed":              speed,
-                            "duplex":             duplex,
-                            "autoconfig enabled": autoconfig_state
-                        })
-                        # TODO: Remove workaround, network dict gets currently overridden to ensure all keys are present
-                        #  for use in widget generating function.
-                        interface_dict.update(network_dict_template.copy())
-                        interface_list.append(interface_dict)
-                ipconfig_interface = dict()
+            interface_stats: dict = psutil.net_if_stats()
+            interface_data_cli: OrderedDict = self.network_config()
+            for index, (interface, interface_data) in enumerate(psutil.net_if_addrs().items()):
+                interface_list.append(network_dict_template.copy())
+                stats: snicstats = interface_stats[interface]
+                cli_data: OrderedDict = interface_data_cli.get(interface, {})
+                interface_list[index].update({
+                    "name": interface,
+                    "state": stats.isup,
+                    "speed": stats.speed or "",
+                    "duplex": _parse_duplex(stats.duplex),
+                    "dhcp enabled": cli_data.get("dhcp enabled", ""),
+                    "gateway": cli_data.get("gateway", ""),
+                    "type": cli_data.get("type", ""),
+                })
+                int_address: snicaddr
+                for int_address in interface_data:
+                    if int_address.family == -1:
+                        interface_list[index].update({"mac address": int_address.address})
+                    elif int_address.family == 2:
+                        interface_list[index].update({"ipv4": int_address.address, "netmask": int_address.netmask})
+                    elif int_address.family == 23:
+                        interface_list[index].update({"ipv6": int_address.address})
+            # interface_list: list[OrderedDict] = []
+            # interface_status: dict = psutil.net_if_stats()
+            # interfaces_addresses: dict = psutil.net_if_addrs()
+            # status: snicstats
+            # ipconfig_interface: dict = dict()
+            # for name, status in interface_status.items():
+            #     if status.isup:
+            #         for interface, data in self.get_ipconfig().items():
+            #             if name in interface:
+            #                 ipconfig_interface = {interface: data}
+            #                 break
+            #         address: snicaddr
+            #         for address in interfaces_addresses[name]:
+            #             family = _parse_address_family(address.family)
+            #             # speed = "1GBit" if status.speed == 1000 else status.speed
+            #             speed = status.speed
+            #             broadcast = address.broadcast if address.broadcast else ""
+            #             duplex = _parse_duplex(status.duplex)
+            #             state = status.isup
+            #             if ipconfig_interface != {} and family == "IPv4":
+            #                 ipconf_int_name = list(ipconfig_interface.keys())[0]
+            #                 netmask = ipconfig_interface[ipconf_int_name]["Subnet Mask"]
+            #                 gateway = ipconfig_interface[ipconf_int_name]["Default Gateway"]
+            #                 dhcp_state = ipconfig_interface[ipconf_int_name]["DHCP Enabled"]
+            #                 dhcp_state = False if dhcp_state == "No" else dhcp_state
+            #                 dhcp_state = True if dhcp_state == "Yes" else dhcp_state
+            #                 dns = ipconfig_interface[ipconf_int_name]["DNS Servers"]
+            #                 autoconfig_state = \
+            #                     ipconfig_interface[ipconf_int_name]["Autoconfiguration Enabled"]
+            #                 autoconfig_state = False if autoconfig_state == "No" else autoconfig_state
+            #                 autoconfig_state = True if autoconfig_state == "Yes" else autoconfig_state
+            #             else:
+            #                 netmask = address.netmask if address.netmask else ""
+            #                 gateway = ""
+            #                 dhcp_state = ""
+            #                 dns = ""
+            #                 autoconfig_state = ""
+            #
+            #             interface_dict = OrderedDict({
+            #                 "name":               name,
+            #                 "state":              state,
+            #                 "family":             family,
+            #                 "dhcp enabled":       dhcp_state,
+            #                 "address":            address.address,
+            #                 "netmask":            netmask,
+            #                 "gateway":            gateway,
+            #                 "broadcast":          broadcast,
+            #                 "dns":                dns,
+            #                 "speed":              speed,
+            #                 "duplex":             duplex,
+            #                 "autoconfig enabled": autoconfig_state
+            #             })
+            #             # TODO: Remove workaround, network dict gets currently overridden to ensure all keys are present
+            #             #  for use in widget generating function.
+            #             interface_dict.update(network_dict_template.copy())
+            #             interface_list.append(interface_dict)
+            #     ipconfig_interface = dict()
         elif self.os == "Darwin":
             interface_stats: dict = psutil.net_if_stats()
             interface_data_cli: OrderedDict = self.network_config()
@@ -312,9 +335,14 @@ class HardwareInfo(Terminal):
                 interface_list.append(network_dict_template.copy())
                 stats: snicstats = interface_stats[interface]
                 cli_data: OrderedDict = interface_data_cli[interface]
-                interface_list[index].update({"name": interface, "state": stats.isup, "speed": stats.speed or "",
-                                              "duplex": _parse_duplex(stats.duplex), "type": cli_data["type"],
-                                              "gateway": cli_data["gateway"]})
+                interface_list[index].update({
+                    "name": interface,
+                    "state": stats.isup,
+                    "speed": stats.speed or "",
+                    "duplex": _parse_duplex(stats.duplex),
+                    "type": cli_data["type"],
+                    "gateway": cli_data["gateway"],
+                })
                 int_address: snicaddr
                 for int_address in interface_data:
                     if int_address.family == 2:
@@ -325,20 +353,7 @@ class HardwareInfo(Terminal):
                     elif int_address.family == 30:
                         interface_list[index].update({"ipv6": int_address.address.split("%")[0]})
         else:
-            interface_list = [OrderedDict({
-                "name": "OS not identified",
-                "state": "OS not identified",
-                "family": "OS not identified",
-                "dhcp enabled": "OS not identified",
-                "address": "OS not identified",
-                "netmask": "OS not identified",
-                "gateway": "OS not identified",
-                "broadcast": "OS not identified",
-                "dns": "OS not identified",
-                "speed": "OS not identified",
-                "duplex": "OS not identified",
-                "autoconfig enabled": "OS not identified"
-            })]
+            interface_list = [OrderedDict({x: "OS not identified" for (x, y) in network_dict_template.copy().items()})]
 
         return OrderedDict({"data_list": interface_list})
 
